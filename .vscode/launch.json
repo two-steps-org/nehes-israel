@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+      {
+        // 🐍 Default: Run the current Python file
+        "name": "Python Debugger: Current File",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${file}",
+        "console": "integratedTerminal"
+      },
+      {
+        // 🚀 Flask Server Debugger
+        "name": "Flask: backend",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/backend/app.py",
+        "env": {
+          "FLASK_APP": "backend/app.py",
+          "FLASK_ENV": "development" // enables debug mode + auto-reload
+        },
+        "args": [
+          "run",
+          "--no-reload" // prevents double-loading issues in VSCode
+        ],
+        "jinja": true,
+        "autoStartBrowser": false,
+        "console": "integratedTerminal",
+        "justMyCode": true
+      },
+      {
+        "name": "backend",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/backend/app.py",
+        "env": {
+          "FLASK_ENV": "development"
+        },
+        "console": "integratedTerminal",
+        "justMyCode": true
+      }      
+    ]
+  }
+  
