@@ -40,7 +40,7 @@ CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://t6d2lxxc1vjn.share.zrok.io/'
 VOICE_ACCEPT_PATH = "/voice/accept"
 VOICE_BUSY_PATH = "/voice/busy"
 
-mongo_uri = os.getenv('mongo_uri')
+mongo_uri = os.getenv('MONGO_URI')
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']           # Replace with your database name
 collection = db['my_db']
