@@ -41,29 +41,33 @@ export interface TripleCallResult {
 }
 
 export async function tripleCallLeads(agentNumber: string): Promise<TripleCallResult> {
-  // Numbers to dial (you can fetch from CRM/API elsewhere—hardcoded for this example)
-  const leads: Lead[] = [
-    { id: "lead1", phoneNumber: "+972544831148", name: "Yoni" },
-    { id: "lead2", phoneNumber: "+972502300180", name: "Ziv" },
-    { id: "lead3", phoneNumber: "+972543190987", name: "Tal" },
-  ];
-
-  // TODO: add a loading state
-  const response = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      agent: agentNumber,
-      //numbers: leads.map((lead) => lead.phoneNumber),
-      numbers: [leads[1].phoneNumber],
-    }),
-  });
-
+  // Fetch leads dynamically from the backend
+  const response = await fetch(`${LOCAL_BACKEND_URL}/api/get-leads`);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }
 
-  // Optionally, you can parse backend response if you want more info
+  const leads: Lead[] = await response.json();
+
+  // Ensure we have at least 3 leads
+  if (leads.length < 3) {
+    throw new Error("The are no leads with 'חדש' to initiate triple call.");
+  }
+
+  // Trigger the call
+  const callResponse = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      agent: agentNumber,
+      numbers: leads.map((lead) => lead.phoneNumber),
+    }),
+  });
+
+  if (!callResponse.ok) {
+    throw new Error(`API error: ${callResponse.status} - ${await callResponse.text()}`);
+  }
+
   return {
     success: true,
     message: `Successfully initiated calls to ${leads.length} leads`,
