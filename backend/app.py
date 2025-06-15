@@ -40,7 +40,15 @@ CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://t6d2lxxc1vjn.share.zrok.io/'
 VOICE_ACCEPT_PATH = "/voice/accept"
 VOICE_BUSY_PATH = "/voice/busy"
 
-mongo_uri = os.getenv('MONGO_URI')
+# Set environment mode: 'production' or 'development'
+app.config['ENV'] = os.getenv('FLASK_ENV', 'production')  # Default is production
+
+# Choose the correct Mongo URI
+if app.config['ENV'] == 'development':
+    mongo_uri = os.getenv('LOCAL_MONGO_URI')
+else:
+    mongo_uri = os.getenv('MONGO_URI')
+
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']           # Replace with your database name
 collection = db['my_db']
@@ -313,8 +321,6 @@ def get_mongo_data():
             "customerNumber": 1
         }))
         
-        print(f"Retrieved {(data)} records from MongoDB")
-
         for record in data:
             record["timestamp"] = datetime.utcnow().isoformat()
 
@@ -372,4 +378,4 @@ def get_leads():
 #     return jsonify(records[::-1])
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
