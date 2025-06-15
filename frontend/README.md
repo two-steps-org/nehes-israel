@@ -29,7 +29,7 @@ A modern, responsive calling application for Nehes Isreal that allows agents to 
 ### Prerequisites
 
 - Node.js 23.x or later
-- npm (11.x or later) or yarn 
+- npm (11.x or later) or yarn
 
 ### Installation
 
@@ -50,16 +50,16 @@ cd nehes-israel-calling-app
 3. Run the install command
 
 ```bash
-npm install
+pnpm install
 ```
 
 4. Deploy the build (or run the dev server for development)
 
 ```bash
-npm run build
-npm run start
+pnpm run build
+pnpm run start
 
-# or 
+# or
 
-npm run dev
+pnpm run dev
 ```

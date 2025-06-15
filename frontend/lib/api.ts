@@ -1,7 +1,7 @@
 // Mock API functions for Twilio integration
 
 const BACKEND_URL = 'https://nehes-israel-system-backend.onrender.com';
-export const LOCAL_BACKEND_URL = 'http://localhost:8080';
+export const LOCAL_BACKEND_URL = 'http://127.0.0.1:5000';
 //const LOCAL_BACKEND_URL = 'https://f21e-143-44-168-187.ngrok-free.app';
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string[]): Promise<void> {
