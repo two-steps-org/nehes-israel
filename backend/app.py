@@ -345,11 +345,11 @@ def update_missing_iscalls():
 def get_leads():
     try:
         # Query MongoDB for leads with status 'חדש'
-        leads = list(collection.find({"status": "חדש"}, {"_id": 0, "phone_number": 1, "full_name": 1}).limit(3))
+        leads = list(collection.find({"status": "חדש"}, {"_id": 1, "phone_number": 1, "full_name": 1}).limit(3))
         # Format the response
         formatted_leads = [
-            {"id": str(idx + 1), "phoneNumber": lead["phone_number"], "name": lead["full_name"]}
-            for idx, lead in enumerate(leads)
+            {"_id": str(lead["_id"]), "phoneNumber": lead["phone_number"], "name": lead["full_name"]}
+            for lead in leads
         ]
         return jsonify(formatted_leads), 200
     except Exception as e:
