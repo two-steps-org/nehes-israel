@@ -41,13 +41,15 @@ VOICE_ACCEPT_PATH = "/voice/accept"
 VOICE_BUSY_PATH = "/voice/busy"
 
 # Set environment mode: 'production' or 'development'
-app.config['ENV'] = os.getenv('FLASK_ENV', 'production')  # Default is production
+app.config['ENV'] = os.getenv('FLASK_ENV', 'development')  # Default is production
 
 # Choose the correct Mongo URI
 if app.config['ENV'] == 'development':
     mongo_uri = os.getenv('LOCAL_MONGO_URI')
 else:
     mongo_uri = os.getenv('MONGO_URI')
+
+
 
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']           # Replace with your database name
@@ -57,6 +59,7 @@ try:
     client = MongoClient(mongo_uri)
     db = client.admin
     server_status = db.command("serverStatus")
+    print(f"Mongo URI: {mongo_uri}")
     print("✅ Connected to MongoDB!")
 except Exception as e:
     print("❌ Connection failed:", e)
