@@ -97,6 +97,7 @@ export function DialerCard({
               type="tel"
               placeholder={t("placeholder.agent")}
               value={agentNumber}
+              maxLength={10}
               onChange={(e) => setAgentNumber(e.target.value)}
               className="border-input dark:border-[#D29D0E]/50 dark:bg-[#122347]/80 dark:text-white focus-visible:ring-[#D29D0E]"
               ref={agentInputRef}
@@ -119,6 +120,7 @@ export function DialerCard({
                   type="tel"
                   placeholder={t("placeholder.customer")}
                   value={num}
+                  maxLength={10}
                   onChange={(e) => {
                     const newNumbers = [...customerNumbers];
                     newNumbers[idx] = e.target.value;

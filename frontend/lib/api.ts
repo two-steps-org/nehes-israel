@@ -5,8 +5,8 @@ export const LOCAL_BACKEND_URL = 'http://127.0.0.1:5000';
 //const LOCAL_BACKEND_URL = 'https://f21e-143-44-168-187.ngrok-free.app';
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string[]): Promise<void> {
-  // console.log(agentNumber)
-  // console.log(customerNumbers)
+  console.log(agentNumber);
+  console.log(customerNumbers);
   const response = await fetch(`${BACKEND_URL}/trigger_target_call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -31,7 +31,7 @@ export async function fetchMongoData(): Promise<any[]> {
 export interface Lead {
   id: string;
   phoneNumber: string;
-  name: string;
+  name?: string;
 }
 
 export interface TripleCallResult {
@@ -40,19 +40,22 @@ export interface TripleCallResult {
   leads: Lead[];
 }
 
-export async function tripleCallLeads(agentNumber: string): Promise<TripleCallResult> {
-  // Fetch leads dynamically from the backend
-  const response = await fetch(`${LOCAL_BACKEND_URL}/api/get-leads`);
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status} - ${await response.text()}`);
-  }
-
-  const leads: Lead[] = await response.json();
-
+// TODO: need to implement this function with leads
+export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promise<TripleCallResult> {
   // Ensure we have at least 3 leads
+  console.log("hereeeeee");
+  console.log(leads);
+
   if (leads.length < 3) {
     throw new Error("The are no leads with 'חדש' to initiate triple call.");
   }
+
+  if (agentNumber.length !== 10) {
+    throw new Error("Agent number must be 10 digits.");
+  }
+
+  const formattedLeads = leads.map((lead) => `+972${lead.phoneNumber}`);
+  console.log(formattedLeads);
 
   // Trigger the call
   const callResponse = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
@@ -60,7 +63,7 @@ export async function tripleCallLeads(agentNumber: string): Promise<TripleCallRe
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       agent: agentNumber,
-      numbers: leads.map((lead) => lead.phoneNumber),
+      numbers: formattedLeads,
     }),
   });
 
@@ -86,15 +89,6 @@ export type CallRecord = {
   status: string
   duration: number
   isCalled?: string
-}
-
-
-
-
-export interface Lead {
-  id: string
-  phoneNumber: string
-  name: string
 }
 
 export interface TripleCallResult {

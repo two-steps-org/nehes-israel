@@ -349,21 +349,6 @@ def update_missing_iscalls():
         "modified": result.modified_count
     }), 200
 
-#Get leads for frontend Triple leads
-@app.route('/api/get-leads', methods=['GET'])
-def get_leads():
-    try:
-        # Query MongoDB for leads with status 'חדש'
-        leads = list(collection.find({"status": "חדש"}, {"_id": 1, "phone_number": 1, "full_name": 1}).limit(3))
-        # Format the response
-        formatted_leads = [
-            {"_id": str(lead["_id"]), "phoneNumber": lead["phone_number"], "name": lead["full_name"]}
-            for lead in leads
-        ]
-        return jsonify(formatted_leads), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 # @app.route("/call_history", methods=["GET"])
 # def get_call_history():

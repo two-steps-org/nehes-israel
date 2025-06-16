@@ -91,7 +91,26 @@ export default function CallingApp() {
               agentInputRef={agentInputRef}
               handleKeypadInput={handleKeypadInput}
               handleKeypadBackspace={handleKeypadBackspace}
-              handleTripleCall={() => handleTripleCall(agentNumber)}
+              handleTripleCall={() => {
+                const leads = customerNumbers
+                  .map((num, idx) =>
+                    num.trim()
+                      ? {
+                          id: `${idx}-${num.trim()}`,
+                          phoneNumber: num.trim(),
+                        }
+                      : null
+                  )
+                  .filter(
+                    (
+                      lead
+                    ): lead is {
+                      id: string;
+                      phoneNumber: string;
+                    } => !!lead
+                  );
+                handleTripleCall(agentNumber, leads);
+              }}
               isTripleCallInProgress={isTripleCallInProgress}
             />
           </div>

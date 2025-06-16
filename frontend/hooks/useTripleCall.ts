@@ -1,17 +1,17 @@
 import { useState, useCallback } from "react"
-import { tripleCallLeads, fetchMongoData } from "@/lib/api"
+import { tripleCallLeads, fetchMongoData, Lead } from "@/lib/api"
 
-export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: any[]) => void, onHistoryUpdate?: (history: any[]) => void } = {}) {
-    const [isTripleCallInProgress, setIsTripleCallInProgress] = useState(false)
-    const [tripleCallStatus, setTripleCallStatus] = useState({ show: false, success: false, message: "" })
-    const [activeLeads, setActiveLeads] = useState<any[]>([])
+export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: Lead[]) => void, onHistoryUpdate?: (history: any[]) => void } = {}) {
+    const [isTripleCallInProgress, setIsTripleCallInProgress] = useState<boolean>(false)
+    const [tripleCallStatus, setTripleCallStatus] = useState<{ show: boolean; success: boolean; message: string }>({ show: false, success: false, message: "" })
+    const [activeLeads, setActiveLeads] = useState<Lead[]>([])
 
-    const handleTripleCall = useCallback(async (agentNumber: string) => {
+    const handleTripleCall = useCallback(async (agentNumber: string, leads: Lead[]) => {
         setIsTripleCallInProgress(true)
         setTripleCallStatus({ show: false, success: false, message: "" })
         setActiveLeads([])
         try {
-            const result = await tripleCallLeads(agentNumber)
+            const result = await tripleCallLeads(agentNumber, leads)
             setTripleCallStatus({
                 show: true,
                 success: result.success,
