@@ -166,7 +166,9 @@ def trigger_triple_call():
     data = request.get_json(force=True)
     agent_number = data.get("agent")
     if not agent_number:
-        return jsonify({"error": "Please provide 'agent' phone number."}), 400
+        agent_number = TWILIO_NUMBER
+        print(f"DEBUG: No Number Provided used agent number: {agent_number}")
+        return jsonify({"No Number Provided": "Used Twilio Number."})
     
     # Validate Twilio credentials
     if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
@@ -246,8 +248,9 @@ def trigger_target_call():
         print(f"DEBUG: agent_number={agent_number}, numbers={numbers}")
         
         if not agent_number or not numbers or not isinstance(numbers, list):
-            print("ERROR: Invalid parameters")
-            return jsonify({"error": "Please provide 'agent' and list of 'numbers'!"}), 400
+            agent_number = TWILIO_NUMBER
+            print(f"DEBUG: No Number Provided used agent number: {agent_number}")
+            return jsonify({"No Number Provided": "Used Twilio Number."})
             
         # Check Twilio credentials
         print(f"DEBUG: ACCOUNT_SID: {ACCOUNT_SID[:10]}...")

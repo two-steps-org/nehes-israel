@@ -1,7 +1,7 @@
 // Mock API functions for Twilio integration
 
 const BACKEND_URL = 'https://nehes-israel-system-backend.onrender.com';
-export const LOCAL_BACKEND_URL = 'http://127.0.0.1:5000';
+export const LOCAL_BACKEND_URL = 'http://127.0.0.1:5001';
 //const LOCAL_BACKEND_URL = 'https://f21e-143-44-168-187.ngrok-free.app';
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string[]): Promise<void> {
@@ -50,7 +50,7 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
     throw new Error("The are no leads with 'חדש' to initiate triple call.");
   }
 
-  if (agentNumber.length !== 10) {
+  if (agentNumber.length < 1) {
     throw new Error("Agent number must be 10 digits.");
   }
 

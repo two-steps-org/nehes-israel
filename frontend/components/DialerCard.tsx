@@ -144,7 +144,6 @@ export function DialerCard({
             onClick={handleCall}
             disabled={
               isCallInProgress ||
-              !agentNumber ||
               customerNumbers.every((n) => !n.trim())
             }
             className="w-full bg-[#122347] hover:bg-[#122347]/90 text-white dark:bg-[#D29D0E] dark:hover:bg-[#D29D0E]/90 dark:text-[#122347] mt-4"

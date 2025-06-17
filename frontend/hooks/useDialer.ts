@@ -13,22 +13,28 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
     const agentInputRef = useRef<HTMLInputElement>(null)
 
     const handleCall = useCallback(async () => {
-        if (!agentNumber || customerNumbers.every(num => !num.trim())) return
-        const fullAgentNumber = `${agentCountryCode}${agentNumber.trim()}`
+        if (customerNumbers.every(num => !num.trim())) {
+            console.log('Early return: all customer numbers are empty');
+            return;
+        }
+        const fullAgentNumber = agentNumber.trim() ? `${agentCountryCode}${agentNumber.trim()}` : ""
         const numbersList = customerNumbers
             .map((num, idx) => {
                 const trimmed = num.trim()
                 return trimmed ? `${customerCountryCodes[idx]}${trimmed}` : null
             })
             .filter((fullNum): fullNum is string => !!fullNum)
-        if (numbersList.length === 0) return
+        if (numbersList.length === 0) {
+            console.log('Early return: numbersList is empty after filtering');
+            return;
+        }
         setIsCallInProgress(true)
         try {
             await bridgeCall(fullAgentNumber, numbersList)
             const history = await fetchMongoData()
             onHistoryUpdate?.(history)
         } catch (error) {
-            // Optionally handle error
+            console.error('Bridge call error:', error)
         } finally {
             setIsCallInProgress(false)
         }
