@@ -5,7 +5,6 @@ export const LOCAL_BACKEND_URL = 'https://bears-whole-dave-admitted.trycloudflar
 // const LOCAL_BACKEND_URL = 'https://f21e-tps:/143-44-168-187.ngrok-free.app';
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
-
   const response = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -20,14 +19,14 @@ export async function bridgeCall(agentNumber: string, customerNumbers: string): 
 }
 
 // TODO: need to implement this function with leads
-export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promise<TripleCallResult> {
+export async function tripleCallLeads(agentNumber: string, leads: string[]): Promise<TripleCallResult> {
   // Ensure we have at least 3 leads
-  console.log(leads);
-  if (leads.length < 3) {
-    throw new Error("The are no leads with 'חדש' to initiate triple call.");
+  // TODO: leads numbers should be different from each other in leads array
+  if (leads.length < 3 || leads.some((lead, index) => leads.indexOf(lead) !== index)) {
+    throw new Error("Leads are not valid. Please check the leads numbers.");
   }
 
-  const formattedLeads = leads.map((lead) => "+972" + (lead.phoneNumber.startsWith('0') ? lead.phoneNumber.slice(1) : lead.phoneNumber));
+  const formattedLeads = leads.map((lead) => "+972" + (lead.startsWith('0') ? lead.slice(1) : lead));
   const formattedAgentNumber = "+972" + (agentNumber.startsWith('0') ? agentNumber.slice(1) : agentNumber);
 
   // Trigger the call

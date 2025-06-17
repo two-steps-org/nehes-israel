@@ -9,9 +9,12 @@ export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: 
     const handleTripleCall = useCallback(async (agentNumber: string, leads: Lead[]) => {
         setIsTripleCallInProgress(true)
         setTripleCallStatus({ show: false, success: false, message: "" })
+
+        const leadsNumbers = leads.map((lead) => lead.phoneNumber)
+
         setActiveLeads([])
         try {
-            const result = await tripleCallLeads(agentNumber, leads)
+            const result = await tripleCallLeads(agentNumber, leadsNumbers)
             setTripleCallStatus({
                 show: true,
                 success: result.success,
@@ -24,8 +27,8 @@ export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: 
             const history = await fetchMongoData()
             onHistoryUpdate?.(history)
             setTimeout(() => setTripleCallStatus((prev) => ({ ...prev, show: false })), 5000)
-        } catch (error) {
-            setTripleCallStatus({ show: true, success: false, message: "An error occurred while initiating triple call" })
+        } catch (error: any) {
+            setTripleCallStatus({ show: true, success: false, message: error.message || "An error occurred while initiating triple call" })
             setTimeout(() => setTripleCallStatus((prev) => ({ ...prev, show: false })), 5000)
         } finally {
             setIsTripleCallInProgress(false)

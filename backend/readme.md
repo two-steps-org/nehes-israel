@@ -79,10 +79,10 @@ By default, Flask will run on `http://127.0.0.1:5000`.
 
 ### 6️⃣ Export server with ngrok
 
-Export flask server to ngrok proxy API getway:
+Export flask server to cloudflared proxy API getway:
 
 ```bash
-ngrok http http://127.0.0.1:5000
+cloudflared tunnel --url http://localhost:5000
 ```
 
 ## ⚠️ Notes
