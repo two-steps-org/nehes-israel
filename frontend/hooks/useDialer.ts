@@ -17,13 +17,9 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
             console.log('Early return: all customer numbers are empty');
             return;
         }
-        const fullAgentNumber = agentNumber.trim() ? `${agentCountryCode}${agentNumber.trim()}` : ""
-        const numbersList = customerNumbers
-            .map((num, idx) => {
-                const trimmed = num.trim()
-                return trimmed ? `${customerCountryCodes[idx]}${trimmed}` : null
-            })
-            .filter((fullNum): fullNum is string => !!fullNum)
+        const fullAgentNumber = agentNumber.trim() ? `${agentCountryCode}${(agentNumber.startsWith('0') ? agentNumber.slice(1) : agentNumber).trim()}` : ""
+        const numbersList = customerNumbers[0].trim() ? `${agentCountryCode}${(customerNumbers[0].startsWith('0') ? customerNumbers[0].slice(1) : customerNumbers[0]).trim()}` : ""
+
         if (numbersList.length === 0) {
             console.log('Early return: numbersList is empty after filtering');
             return;

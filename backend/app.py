@@ -36,7 +36,7 @@ TWILIO_NUMBER = os.getenv('TWILIO_NUMBER')
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
 GOOGLE_API_JSON = os.getenv('GOOGLE_API_JSON')
 
-CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://t6d2lxxc1vjn.share.zrok.io/')
+CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://zsvwmdliiow2.share.zrok.io')
 VOICE_ACCEPT_PATH = "/voice/accept"
 VOICE_BUSY_PATH = "/voice/busy"
 
@@ -48,8 +48,6 @@ if app.config['ENV'] == 'development':
     mongo_uri = os.getenv('LOCAL_MONGO_URI')
 else:
     mongo_uri = os.getenv('MONGO_URI')
-
-
 
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']           # Replace with your database name
@@ -222,11 +220,10 @@ def target_call_twiml():
 
 @app.route("/trigger_target_call", methods=['POST'])
 def trigger_target_call():
-    # TODO: ask karl regarding the twiml_url and all the configurations
     try:
         print("=== DEBUG: Starting trigger_target_call ===")
         
-        # Validate Twilio credentials first
+        # Validate Twilio credentials firstAdd commentMore actions
         if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
             print(f"ERROR: Invalid ACCOUNT_SID: {ACCOUNT_SID} (length: {len(ACCOUNT_SID) if ACCOUNT_SID else 0})")
             return jsonify({"error": "Invalid Twilio Account SID"}), 500
@@ -248,9 +245,8 @@ def trigger_target_call():
         print(f"DEBUG: agent_number={agent_number}, numbers={numbers}")
         
         if not agent_number or not numbers or not isinstance(numbers, list):
-            agent_number = TWILIO_NUMBER
-            print(f"DEBUG: No Number Provided used agent number: {agent_number}")
-            return jsonify({"No Number Provided": "Used Twilio Number."})
+            print("ERROR: Invalid parameters")
+            return jsonify({"error": "Please provide 'agent' and list of 'numbers'!"}), 400
             
         # Check Twilio credentials
         print(f"DEBUG: ACCOUNT_SID: {ACCOUNT_SID[:10]}...")
