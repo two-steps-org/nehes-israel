@@ -68,12 +68,22 @@ pip install -r requirements.txt
 Make sure the virtual environment is activated, then run:
 
 ```bash
+mac:
 python3 -m flask run
+
+windows:
+python -m flask run
 ```
 
 By default, Flask will run on `http://127.0.0.1:5000`.
 
----
+### 6️⃣ Export server with ngrok
+
+Export flask server to cloudflared proxy API getway:
+
+```bash
+cloudflared tunnel --url http://localhost:5000
+```
 
 ## ⚠️ Notes
 

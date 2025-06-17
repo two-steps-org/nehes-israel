@@ -36,11 +36,19 @@ TWILIO_NUMBER = os.getenv('TWILIO_NUMBER')
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
 GOOGLE_API_JSON = os.getenv('GOOGLE_API_JSON')
 
-CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://t6d2lxxc1vjn.share.zrok.io/')
+CALLBACK_BASE = os.getenv('CALLBACK_BASE', 'https://zsvwmdliiow2.share.zrok.io')
 VOICE_ACCEPT_PATH = "/voice/accept"
 VOICE_BUSY_PATH = "/voice/busy"
 
-mongo_uri = os.getenv('MONGO_URI')
+# Set environment mode: 'production' or 'development'
+app.config['ENV'] = os.getenv('FLASK_ENV', 'development')  # Default is production
+
+# Choose the correct Mongo URI
+if app.config['ENV'] == 'development':
+    mongo_uri = os.getenv('LOCAL_MONGO_URI')
+else:
+    mongo_uri = os.getenv('MONGO_URI')
+
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']           # Replace with your database name
 collection = db['my_db']
@@ -49,6 +57,7 @@ try:
     client = MongoClient(mongo_uri)
     db = client.admin
     server_status = db.command("serverStatus")
+    print(f"Mongo URI: {mongo_uri}")
     print("✅ Connected to MongoDB!")
 except Exception as e:
     print("❌ Connection failed:", e)
@@ -155,7 +164,9 @@ def trigger_triple_call():
     data = request.get_json(force=True)
     agent_number = data.get("agent")
     if not agent_number:
-        return jsonify({"error": "Please provide 'agent' phone number."}), 400
+        agent_number = TWILIO_NUMBER
+        print(f"DEBUG: No Number Provided used agent number: {agent_number}")
+        return jsonify({"No Number Provided": "Used Twilio Number."})
     
     # Validate Twilio credentials
     if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
@@ -209,11 +220,10 @@ def target_call_twiml():
 
 @app.route("/trigger_target_call", methods=['POST'])
 def trigger_target_call():
-    # TODO: ask karl regarding the twiml_url and all the configurations
     try:
         print("=== DEBUG: Starting trigger_target_call ===")
         
-        # Validate Twilio credentials first
+        # Validate Twilio credentials firstAdd commentMore actions
         if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
             print(f"ERROR: Invalid ACCOUNT_SID: {ACCOUNT_SID} (length: {len(ACCOUNT_SID) if ACCOUNT_SID else 0})")
             return jsonify({"error": "Invalid Twilio Account SID"}), 500
@@ -313,8 +323,6 @@ def get_mongo_data():
             "customerNumber": 1
         }))
         
-        print(f"Retrieved {(data)} records from MongoDB")
-
         for record in data:
             record["timestamp"] = datetime.utcnow().isoformat()
 
@@ -341,7 +349,6 @@ def update_missing_iscalls():
     }), 200
 
 
-
 # @app.route("/call_history", methods=["GET"])
 # def get_call_history():
 #     gc = gspread_client()
@@ -358,4 +365,4 @@ def update_missing_iscalls():
 #     return jsonify(records[::-1])
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
