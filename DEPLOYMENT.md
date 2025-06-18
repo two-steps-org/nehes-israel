@@ -4,7 +4,7 @@
 
 - Docker Hub account
 - Render account (for backend)
-- Netlify account (for frontend)
+- Vercel account (for frontend)
 - GitHub repository admin access
 
 ---
@@ -27,13 +27,12 @@
 
 ---
 
-## 3. Netlify Setup (Frontend)
+## 3. Vercel Setup (Frontend)
 
-1. Create a new site on Netlify: https://app.netlify.com/
-2. Choose "Deploy with Docker".
-3. Use your Docker Hub image: `your-dockerhub-username/nehes-frontend:latest`.
-4. Note your Netlify Site ID (from site settings or API docs).
-5. Generate a Netlify Personal Access Token (User Settings > Applications > Personal Access Tokens).
+1. Create a new project on Vercel: https://vercel.com/
+2. Connect your GitHub repository or set up a project manually.
+3. Get your Vercel Org ID and Project ID (see Vercel docs or use the Vercel CLI: `vercel projects ls`).
+4. Generate a Vercel token: https://vercel.com/account/tokens
 
 ---
 
@@ -45,8 +44,9 @@ Go to your GitHub repo > Settings > Secrets and variables > Actions, and add:
 - `DOCKERHUB_TOKEN`: Your Docker Hub access token
 - `RENDER_API_KEY`: Your Render API key
 - `RENDER_SERVICE_ID`: Your Render service ID
-- `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token
-- `NETLIFY_SITE_ID`: Your Netlify site ID
+- `VERCEL_TOKEN`: Your Vercel personal access token
+- `VERCEL_ORG_ID`: Your Vercel organization ID
+- `VERCEL_PROJECT_ID`: Your Vercel project ID
 
 ---
 
@@ -93,14 +93,14 @@ To receive an email after successful deployment:
 
 - Check GitHub Actions logs for errors.
 - Ensure all secrets are set correctly.
-- Make sure Docker images are public or Render/Netlify have access.
-- For Render/Netlify API issues, check their respective dashboards and API docs.
+- Make sure Docker images are public or Render/Vercel have access.
+- For Render/Vercel API issues, check their respective dashboards and API docs.
 
 ---
 
 ## 7. Useful Links
 
 - [Render API Docs](https://render.com/docs/api)
-- [Netlify API Docs](https://docs.netlify.com/api/get-started/)
+- [Vercel Docs](https://vercel.com/docs)
 - [Docker Hub Docs](https://docs.docker.com/docker-hub/)
 - [GitHub Actions Docs](https://docs.github.com/en/actions)

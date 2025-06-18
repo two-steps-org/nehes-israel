@@ -1,6 +1,6 @@
-const dev = 'https://navigation-cute-bean-optics.trycloudflare.com';
-const prod = 'https://nehes-israel-system-backend.onrender.com';
-const local = 'http://127.0.0.1:5000';
+const dev = process.env.NEXT_PUBLIC_DEV_URL;
+const prod = process.env.NEXT_PUBLIC_SERVER_URL;
+
 const BACKEND_URL = process.env.NODE_ENV === 'development' ? dev : prod;
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
