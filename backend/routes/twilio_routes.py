@@ -1,8 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Dial, Number
 from twilio.rest import Client
-from utils.utils import log_request, gspread_client, log_call_to_sheet, update_sheet_status
-from lead_selector import select_leads
+from utils.utils import update_sheet_status
 import os
 
 ACCOUNT_SID = os.getenv('ACCOUNT_SID')
@@ -11,62 +10,8 @@ API_KEY_SID = os.getenv('API_KEY_SID')
 API_KEY_SECRET = os.getenv('API_KEY_SECRET')
 TWILIO_NUMBER = os.getenv('TWILIO_NUMBER')
 
-
 twilio_bp = Blueprint('twilio', __name__)
 BASE_URL = '/api/twilio'
-
-@twilio_bp.route(f"{BASE_URL}/triple_call", methods=['GET', 'POST'])
-def triple_call_twiml():
-    leads = select_leads()  # This should return a list of phone numbers as strings
-    vr = VoiceResponse()
-    dial = Dial()
-
-    callback_url = request.url_root.rstrip("/") + "/twilio_callback"
-    status_events = "initiated,ringing,answered,completed,busy,failed,no-answer,canceled"
-
-    for n in leads:
-        num = Number(
-            n,
-            status_callback=callback_url,
-            status_callback_event=status_events,
-            status_callback_method="POST"
-        )
-        dial.append(num)
-
-    vr.append(dial)
-    return Response(str(vr), mimetype="text/xml")
-
-@twilio_bp.route(f"{BASE_URL}/trigger_triple_call", methods=['POST'])
-def trigger_triple_call():
-    data = request.get_json(force=True)
-    agent_number = data.get("agent")
-    if not agent_number:
-        agent_number = TWILIO_NUMBER
-        print(f"DEBUG: No Number Provided used agent number: {agent_number}")
-        return jsonify({"No Number Provided": "Used Twilio Number."})
-    
-    # Validate Twilio credentials
-    if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
-        return jsonify({"error": "Invalid Twilio Account SID"}), 500
-        
-    if not API_KEY_SID or not API_KEY_SECRET:
-        return jsonify({"error": "Missing Twilio API Key credentials"}), 500
-    
-    # twiml_url = request.url_root.rstrip("/") + "/triple_call"
-    twiml_url = "http://localhost:5001/triple_call"
-    # callback_url = request.url_root.rstrip("/") + "/twilio_callback"
-    callback_url = "http://localhost:5001/twilio_callback"
-    client = Client(API_KEY_SID, API_KEY_SECRET, ACCOUNT_SID)
-    call = client.calls.create(
-        to=agent_number,
-        from_=TWILIO_NUMBER,
-        url=twiml_url,
-        method="POST",
-        status_callback=callback_url,
-        status_callback_event=["initiated","ringing","answered","completed","busy","failed","no-answer","canceled"],
-        status_callback_method="POST"
-    )
-    return jsonify({"call_sid": call.sid})
 
 @twilio_bp.route(f"{BASE_URL}/target_call", methods=['GET', 'POST'])
 def target_call_twiml():
@@ -81,7 +26,7 @@ def target_call_twiml():
         return Response("<Response><Say>No numbers provided</Say></Response>", mimetype="text/xml")
     vr = VoiceResponse()
     dial = Dial()
-    callback_url = request.url_root.rstrip("/") + "/twilio_callback"
+    callback_url = request.url_root.rstrip("/") + f"{BASE_URL}/twilio_callback"
     for n in numbers:
         num = Number(
             n,
@@ -94,7 +39,7 @@ def target_call_twiml():
     print("Returning TwiML:", str(vr))
     return Response(str(vr), mimetype="text/xml")
 
-@twilio_bp.route(f"{BASE_URL}/trigger_target_call", methods=['POST'])
+@twilio_bp.route(f"{BASE_URL}/trigger_target_call", methods=['POST', 'GET'])
 def trigger_target_call():
     try:
         print("=== DEBUG: Starting trigger_target_call ===")
@@ -130,7 +75,7 @@ def trigger_target_call():
         print(f"DEBUG: TWILIO_NUMBER: {TWILIO_NUMBER}")
         
         num_string = ",".join(numbers)
-        twiml_url = request.url_root.rstrip("/") + f"/target_call?numbers={num_string}"
+        twiml_url = request.url_root.rstrip("/") + f"{BASE_URL}/target_call?numbers={num_string}"
         print(f"DEBUG: twiml_url: {twiml_url}")
         
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
@@ -165,7 +110,7 @@ def trigger_target_call():
         return jsonify({"error": f"Failed to trigger call: {str(e)}"}), 500
     
 
-@twilio_bp.route("/api/twilio_callback",  methods=['GET', 'POST'])
+@twilio_bp.route(f"{BASE_URL}/twilio_callback",  methods=['GET', 'POST'])
 def twilio_callback():
     if request.method == "POST":
         form = request.form
@@ -182,3 +127,82 @@ def twilio_callback():
     print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
     update_sheet_status(call_sid, call_status, duration, from_number, to_number)
     return ("", 204) 
+
+
+# TODO: might be relevant later -
+
+# TODO: 1
+# @twilio_bp.route(f"{BASE_URL}/triple_call", methods=['GET', 'POST'])
+# def triple_call_twiml():
+#     leads = select_leads()
+#     vr = VoiceResponse()
+#     dial = Dial()
+
+#     callback_url = request.url_root.rstrip("/") + "/twilio_callback"
+#     status_events = "initiated,ringing,answered,completed,busy,failed,no-answer,canceled"
+
+#     for n in leads:
+#         num = Number(
+#             n,
+#             status_callback=callback_url,
+#             status_callback_event=status_events,
+#             status_callback_method="POST"
+#         )
+#         dial.append(num)
+
+#     vr.append(dial)
+#     return Response(str(vr), mimetype="text/xml")
+
+# TODO: 2
+# @twilio_bp.route(f"{BASE_URL}/triple_call", methods=['GET', 'POST'])
+# def triple_call_twiml():
+#     leads = select_leads()  # This should return a list of phone numbers as strings
+#     vr = VoiceResponse()
+#     dial = Dial()
+
+#     callback_url = request.url_root.rstrip("/") + "/twilio_callback"
+#     status_events = "initiated,ringing,answered,completed,busy,failed,no-answer,canceled"
+
+#     for n in leads:
+#         num = Number(
+#             n,
+#             status_callback=callback_url,
+#             status_callback_event=status_events,
+#             status_callback_method="POST"
+#         )
+#         dial.append(num)
+
+#     vr.append(dial)
+#     return Response(str(vr), mimetype="text/xml")
+
+# @twilio_bp.route(f"{BASE_URL}/trigger_triple_call", methods=['POST'])
+# def trigger_triple_call():
+#     data = request.get_json(force=True)
+#     agent_number = data.get("agent")
+#     if not agent_number:
+#         agent_number = TWILIO_NUMBER
+#         print(f"DEBUG: No Number Provided used agent number: {agent_number}")
+#         return jsonify({"No Number Provided": "Used Twilio Number."})
+    
+#     # Validate Twilio credentials
+#     if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
+#         return jsonify({"error": "Invalid Twilio Account SID"}), 500
+        
+#     if not API_KEY_SID or not API_KEY_SECRET:
+#         return jsonify({"error": "Missing Twilio API Key credentials"}), 500
+    
+#     # twiml_url = request.url_root.rstrip("/") + "/triple_call"
+#     twiml_url = "http://localhost:5001/triple_call"
+#     # callback_url = request.url_root.rstrip("/") + "/twilio_callback"
+#     callback_url = "http://localhost:5001/twilio_callback"
+#     client = Client(API_KEY_SID, API_KEY_SECRET, ACCOUNT_SID)
+#     call = client.calls.create(
+#         to=agent_number,
+#         from_=TWILIO_NUMBER,
+#         url=twiml_url,
+#         method="POST",
+#         status_callback=callback_url,
+#         status_callback_event=["initiated","ringing","answered","completed","busy","failed","no-answer","canceled"],
+#         status_callback_method="POST"
+#     )
+#     return jsonify({"call_sid": call.sid})

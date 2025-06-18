@@ -1,10 +1,10 @@
-const dev = 'https://jamaica-revolution-analyses-sf.trycloudflare.com';
+const dev = 'https://navigation-cute-bean-optics.trycloudflare.com';
 const prod = 'https://nehes-israel-system-backend.onrender.com';
 const local = 'http://127.0.0.1:5000';
 const BACKEND_URL = process.env.NODE_ENV === 'development' ? dev : prod;
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
-  const response = await fetch(`${BACKEND_URL}/trigger_target_call`, {
+  const response = await fetch(`${BACKEND_URL}/api/twilio/trigger_target_call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
