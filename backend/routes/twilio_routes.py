@@ -75,6 +75,7 @@ def trigger_target_call():
         print(f"DEBUG: TWILIO_NUMBER: {TWILIO_NUMBER}")
         
         num_string = ",".join(numbers)
+        # once 
         twiml_url = request.url_root.rstrip("/") + f"{BASE_URL}/target_call?numbers={num_string}"
         print(f"DEBUG: twiml_url: {twiml_url}")
         

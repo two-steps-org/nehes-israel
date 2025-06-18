@@ -2,7 +2,12 @@ import os
 from pymongo import MongoClient
 
 FLASK_ENV = os.getenv('FLASK_ENV')
-mongo_uri = os.getenv('LOCAL_MONGO_URI') if FLASK_ENV == 'development' else os.getenv('MONGO_URI')
+if FLASK_ENV == 'development':
+    mongo_uri = os.getenv('LOCAL_MONGO_URI', 'mongodb://localhost:27017')
+else:
+    mongo_uri = os.getenv('MONGO_URI')
+    if not mongo_uri:
+        raise RuntimeError('MONGO_URI environment variable must be set in production!')
 
 client = MongoClient(mongo_uri)
 db = client['nehes_israel']

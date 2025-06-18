@@ -1,0 +1,106 @@
+# Deployment Guide: Nehes Israel
+
+## Prerequisites
+
+- Docker Hub account
+- Render account (for backend)
+- Netlify account (for frontend)
+- GitHub repository admin access
+
+---
+
+## 1. Docker Hub Setup
+
+1. Create a Docker Hub account: https://hub.docker.com/
+2. Create a new repository for backend (e.g., `nehes-backend`) and frontend (e.g., `nehes-frontend`).
+3. Generate a Docker Hub access token (Account Settings > Security > New Access Token).
+
+---
+
+## 2. Render Setup (Backend)
+
+1. Create a new Web Service on Render: https://dashboard.render.com/
+2. Choose "Deploy an existing image from a registry".
+3. Use your Docker Hub image: `your-dockerhub-username/nehes-backend:latest`.
+4. Note your Render Service ID (from the service settings or API docs).
+5. Generate a Render API key (Account Settings > API Keys).
+
+---
+
+## 3. Netlify Setup (Frontend)
+
+1. Create a new site on Netlify: https://app.netlify.com/
+2. Choose "Deploy with Docker".
+3. Use your Docker Hub image: `your-dockerhub-username/nehes-frontend:latest`.
+4. Note your Netlify Site ID (from site settings or API docs).
+5. Generate a Netlify Personal Access Token (User Settings > Applications > Personal Access Tokens).
+
+---
+
+## 4. GitHub Secrets
+
+Go to your GitHub repo > Settings > Secrets and variables > Actions, and add:
+
+- `DOCKERHUB_USERNAME`: Your Docker Hub username
+- `DOCKERHUB_TOKEN`: Your Docker Hub access token
+- `RENDER_API_KEY`: Your Render API key
+- `RENDER_SERVICE_ID`: Your Render service ID
+- `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token
+- `NETLIFY_SITE_ID`: Your Netlify site ID
+
+---
+
+## 5. Alerting
+
+- The workflow sends an email alert when both backend and frontend are deployed.
+- To receive email alerts, follow the instructions below.
+
+### Email Notification Setup
+
+To receive an email after successful deployment:
+
+1. **Obtain SMTP credentials** for your email provider (e.g., Gmail, Outlook, company SMTP):
+
+   - SMTP server address (e.g., `smtp.gmail.com`)
+   - SMTP port (e.g., `465` for SSL or `587` for TLS)
+   - SMTP username (your email address or login)
+   - SMTP password (your email password or app password)
+   - From address (the email address you want the notification to come from)
+
+2. **Add the following secrets** to your GitHub repository (Settings > Secrets and variables > Actions):
+
+   - `SMTP_SERVER`: Your SMTP server address
+   - `SMTP_PORT`: Your SMTP port
+   - `SMTP_USERNAME`: Your SMTP username
+   - `SMTP_PASSWORD`: Your SMTP password or app password
+   - `SMTP_FROM`: The email address to send from
+
+3. **Recipient**: The workflow is configured to send to `shay.bushary@twosteps.ai`.
+
+#### Example (Gmail):
+
+- `SMTP_SERVER`: `smtp.gmail.com`
+- `SMTP_PORT`: `465`
+- `SMTP_USERNAME`: `youraddress@gmail.com`
+- `SMTP_PASSWORD`: _App password (recommended, not your main password)_
+- `SMTP_FROM`: `youraddress@gmail.com`
+
+> **Note:** For Gmail, you must enable 2FA and create an App Password for SMTP access.
+
+---
+
+## 6. Troubleshooting
+
+- Check GitHub Actions logs for errors.
+- Ensure all secrets are set correctly.
+- Make sure Docker images are public or Render/Netlify have access.
+- For Render/Netlify API issues, check their respective dashboards and API docs.
+
+---
+
+## 7. Useful Links
+
+- [Render API Docs](https://render.com/docs/api)
+- [Netlify API Docs](https://docs.netlify.com/api/get-started/)
+- [Docker Hub Docs](https://docs.docker.com/docker-hub/)
+- [GitHub Actions Docs](https://docs.github.com/en/actions)
