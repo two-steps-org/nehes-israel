@@ -1,11 +1,10 @@
-// Mock API functions for Twilio integration
-
-const BACKEND_URL = 'https://nehes-israel-system-backend.onrender.com';
-export const LOCAL_BACKEND_URL = 'https://bears-whole-dave-admitted.trycloudflare.com';
-// const LOCAL_BACKEND_URL = 'https://f21e-tps:/143-44-168-187.ngrok-free.app';
+const dev = 'https://jamaica-revolution-analyses-sf.trycloudflare.com';
+const prod = 'https://nehes-israel-system-backend.onrender.com';
+const local = 'http://127.0.0.1:5000';
+const BACKEND_URL = process.env.NODE_ENV === 'development' ? dev : prod;
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
-  const response = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
+  const response = await fetch(`${BACKEND_URL}/trigger_target_call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -18,19 +17,19 @@ export async function bridgeCall(agentNumber: string, customerNumbers: string): 
   }
 }
 
-// TODO: need to implement this function with leads
-export async function tripleCallLeads(agentNumber: string, leads: string[]): Promise<TripleCallResult> {
+export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promise<TripleCallResult> {
+  const leadsNumbers = leads.map((lead) => lead.phoneNumber)
+
   // Ensure we have at least 3 leads
-  // TODO: leads numbers should be different from each other in leads array
-  if (leads.length < 3 || leads.some((lead, index) => leads.indexOf(lead) !== index)) {
+  if (leads.length < 3 || leads.some((lead, index) => leads.findIndex(l => l.phoneNumber === lead.phoneNumber) !== index)) {
     throw new Error("Leads are not valid. Please check the leads numbers.");
   }
 
-  const formattedLeads = leads.map((lead) => "+972" + (lead.startsWith('0') ? lead.slice(1) : lead));
+  const formattedLeads = leadsNumbers.map((lead) => "+972" + (lead.startsWith('0') ? lead.slice(1) : lead));
   const formattedAgentNumber = "+972" + (agentNumber.startsWith('0') ? agentNumber.slice(1) : agentNumber);
 
   // Trigger the call
-  const callResponse = await fetch(`${LOCAL_BACKEND_URL}/trigger_target_call`, {
+  const callResponse = await fetch(`${BACKEND_URL}/api/twilio/trigger_target_call`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -51,7 +50,7 @@ export async function tripleCallLeads(agentNumber: string, leads: string[]): Pro
 }
 
 export async function fetchMongoData(): Promise<any[]> {
-  const response = await fetch(`${'http://127.0.0.1:5000'}/api/mongo-data`);
+  const response = await fetch(`${BACKEND_URL}/api/mongo-data`);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }
@@ -59,21 +58,16 @@ export async function fetchMongoData(): Promise<any[]> {
 }
 
 // interfaces
-
 export interface Lead {
   id: string;
   phoneNumber: string;
   name?: string;
 }
-
 export interface TripleCallResult {
   success: boolean;
   message: string;
   leads: Lead[];
 }
-
-
-
 export type CallRecord = {
   id?: string
   full_name?: string
@@ -86,7 +80,6 @@ export type CallRecord = {
   duration: number
   isCalled?: string
 }
-
 export interface TripleCallResult {
   success: boolean
   message: string
