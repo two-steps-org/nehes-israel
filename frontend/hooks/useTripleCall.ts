@@ -10,11 +10,10 @@ export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: 
         setIsTripleCallInProgress(true)
         setTripleCallStatus({ show: false, success: false, message: "" })
 
-        const leadsNumbers = leads.map((lead) => lead.phoneNumber)
 
         setActiveLeads([])
         try {
-            const result = await tripleCallLeads(agentNumber, leadsNumbers)
+            const result = await tripleCallLeads(agentNumber, leads)
             setTripleCallStatus({
                 show: true,
                 success: result.success,
