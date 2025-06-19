@@ -58,6 +58,10 @@ const translations: Translations = {
     en: "Leads",
     he: "לידים",
   },
+  "history.subtitle": {
+    en: "List of leads",
+    he: "רשימת לידים",
+  },
   "history.tabs.recent": {
     en: "List",
     he: "אחרונות",

@@ -74,7 +74,6 @@ export default function CallingApp() {
       dir={dir}
     >
       <AppHeader />
-      <h1 className="some">hereee</h1>
 
       <div className="flex-1 container mx-auto px-4 py-6">
         <div className={`flex flex-row lg:${flexDirection} gap-6`}>

@@ -6,17 +6,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .some {
-    background-color: red;
-    font-size: 100px;
-  }
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -96,35 +85,4 @@ body {
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Custom Scrollbar - Move outside of layers to ensure it's not purged */
-/* Firefox */
-.scrollbar-hide {
-  scrollbar-width: none !important;
-}
-
-/* Chrome, Edge, and Safari */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none !important;
-}
-
-/* Custom scrollbar styling */
-*::-webkit-scrollbar {
-  width: 200px !important;
-}
-
-*::-webkit-scrollbar-track {
-  background: #f1f1f1 !important;
-  border-radius: 5px !important;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: green !important;
-  border-radius: 14px !important;
-  border: 3px solid #f1f1f1 !important;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background-color: red !important;
 }
