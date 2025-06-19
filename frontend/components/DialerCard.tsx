@@ -83,7 +83,7 @@ export function DialerCard(props: DialerCardProps) {
           <Button
             onClick={handleButtonClick}
             disabled={isButtonDisabled}
-            className="w-full bg-[#122347] hover:bg-[#122347]/90 text-white dark:bg-[#D29D0E] dark:hover:bg-[#D29D0E]/90 dark:text-[#122347] mt-4 py-6 text-lg"
+            className="w-full bg-[#122347] hover:bg-[#122347]/90 text-white dark:bg-[#D29D0E] dark:hover:bg-[#D29D0E]/90 dark:text-[#122347] py-6 text-lg"
             size="lg"
           >
             <ButtonIcon className={iconClass} />

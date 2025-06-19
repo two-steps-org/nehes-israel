@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, RefObject } from "react"
-import { bridgeCall, fetchActiveLeads } from "@/lib/api"
+import { bridgeCall, fetchActiveLeads, Lead } from "@/lib/api"
 import { ActiveLeads } from "@/types/activeLeads.type";
 
 type CustomerNumber = {
@@ -46,6 +46,19 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: Act
             setIsCallInProgress(false)
         }
     }, [agentNumber, customerNumbers, agentCountryCode, customerCountryCodes, onHistoryUpdate])
+
+    const mapCustomerNumbersToLeads = useCallback((): Lead[] => {
+        return customerNumbers
+            .map((customerNumber) =>
+                customerNumber.phone.trim()
+                    ? {
+                        id: `${customerNumber.id}-${customerNumber.phone.trim()}`,
+                        phoneNumber: customerNumber.phone.trim(),
+                    }
+                    : null
+            )
+            .filter((lead): lead is Lead => !!lead);
+    }, [customerNumbers]);
 
     const handleKeypadInput = useCallback((value: string) => {
         if (focusedInput === "agent") {
@@ -126,5 +139,6 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: Act
         handleFillCustomerNumber,
         isTripleCallMode,
         setIsTripleCallMode,
+        mapCustomerNumbersToLeads,
     }
 } 

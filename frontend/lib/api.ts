@@ -1,4 +1,4 @@
-import { ActiveLeads } from "@/types/activeLeads.type";
+import { ActiveLeads, Lead } from "@/types/activeLeads.type";
 
 const dev = process.env.NEXT_PUBLIC_DEV_URL;
 const prod = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -59,12 +59,6 @@ export async function fetchActiveLeads(): Promise<ActiveLeads> {
   return await response.json() as ActiveLeads;
 }
 
-// interfaces
-export interface Lead {
-  id: string;
-  phoneNumber: string;
-  name?: string;
-}
 export interface TripleCallResult {
   success: boolean;
   message: string;

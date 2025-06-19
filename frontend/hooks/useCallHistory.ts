@@ -4,7 +4,7 @@ import { ActiveLeads } from "@/types/activeLeads.type"
 
 export function useCallHistory(visibleCountInitial = 25) {
     const [callHistory, setCallHistory] = useState<ActiveLeads>([])
-    const [isLoadingHistory, setIsLoadingHistory] = useState(true)
+    const [isLeadsLoading, setIsLeadsLoading] = useState(true)
     const [visibleCount, setVisibleCount] = useState(visibleCountInitial)
     const [hasMoreData, setHasMoreData] = useState(true)
 
@@ -17,31 +17,31 @@ export function useCallHistory(visibleCountInitial = 25) {
             } catch (error) {
                 throw error
             } finally {
-                if (mounted) setIsLoadingHistory(false)
+                if (mounted) setIsLeadsLoading(false)
             }
         }
         loadCallHistory()
         return () => { mounted = false }
     }, [])
 
-    const visibleHistory = useMemo(() => callHistory.data?.slice(0, visibleCount), [callHistory, visibleCount])
+    const leads = useMemo(() => callHistory.data?.slice(0, visibleCount), [callHistory, visibleCount])
 
     const reloadHistory = useCallback(async () => {
-        setIsLoadingHistory(true)
+        setIsLeadsLoading(true)
         try {
             const history = await fetchActiveLeads()
             setCallHistory(history)
         } catch (error) {
             // Optionally handle error
         } finally {
-            setIsLoadingHistory(false)
+            setIsLeadsLoading(false)
         }
     }, [])
 
     return {
         callHistory,
-        visibleHistory,
-        isLoadingHistory,
+        leads,
+        isLeadsLoading,
         visibleCount,
         hasMoreData,
         reloadHistory,

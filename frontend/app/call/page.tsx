@@ -8,8 +8,7 @@ import { useDialer } from "@/hooks/useDialer";
 import { DialerCard } from "@/components/DialerCard";
 import { ActiveLeadsCard } from "@/components/ActiveLeadsCard";
 import { StatusAlert } from "@/components/StatusAlert";
-import { CallHistoryCard } from "@/components/CallHistoryCard";
-import { Lead } from "@/lib/api";
+import { LeadsTable } from "@/components/LeadsTable";
 import { ActiveLeads } from "@/types/activeLeads.type";
 import React, { useMemo } from "react";
 
@@ -17,7 +16,7 @@ export default function CallingApp() {
   const { t, dir } = useLanguage();
 
   // Call history hook
-  const { visibleHistory, isLoadingHistory, setCallHistory } = useCallHistory();
+  const { leads, isLeadsLoading, setCallHistory } = useCallHistory();
 
   // Dialer hook
   const agentInputRef = React.useRef<HTMLInputElement>(null);
@@ -39,6 +38,7 @@ export default function CallingApp() {
     handleFillCustomerNumber,
     isTripleCallMode,
     setIsTripleCallMode,
+    mapCustomerNumbersToLeads,
   } = useDialer({
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
   });
@@ -49,7 +49,6 @@ export default function CallingApp() {
     tripleCallStatus,
     activeLeads,
     handleTripleCall,
-    setActiveLeads,
   } = useTripleCall({
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
   });
@@ -87,25 +86,7 @@ export default function CallingApp() {
               handleKeypadInput={handleKeypadInput}
               handleKeypadBackspace={handleKeypadBackspace}
               handleTripleCall={() => {
-                const leads = customerNumbers
-                  .map((customerNumber) =>
-                    customerNumber.phone.trim()
-                      ? {
-                          id: `${
-                            customerNumber.id
-                          }-${customerNumber.phone.trim()}`,
-                          phoneNumber: customerNumber.phone.trim(),
-                        }
-                      : null
-                  )
-                  .filter(
-                    (
-                      lead
-                    ): lead is {
-                      id: string;
-                      phoneNumber: string;
-                    } => !!lead
-                  );
+                const leads = mapCustomerNumbersToLeads();
                 handleTripleCall(agentNumber, leads);
               }}
               isTripleCallInProgress={isTripleCallInProgress}
@@ -114,15 +95,20 @@ export default function CallingApp() {
             />
           </div>
           <div className="lg:w-2/3 space-y-6">
+            {/* status alert */}
             <StatusAlert tripleCallStatus={tripleCallStatus} t={t} />
+
+            {/* active call leads card*/}
             <ActiveLeadsCard
               activeLeads={activeLeads}
               iconMarginClass={iconMarginClass}
               t={t}
             />
-            <CallHistoryCard
-              visibleHistory={visibleHistory}
-              isLoadingHistory={isLoadingHistory}
+
+            {/* leads table */}
+            <LeadsTable
+              leads={leads}
+              isLeadsLoading={isLeadsLoading}
               t={t}
               handleFillCustomerNumber={handleFillCustomerNumber}
             />

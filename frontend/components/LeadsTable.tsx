@@ -6,23 +6,29 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import React from "react";
+import { Lead } from "@/types/activeLeads.type";
+import React, { useEffect } from "react";
 
 interface CallHistoryCardProps {
-  visibleHistory: any[];
-  isLoadingHistory: boolean;
+  leads: Lead[];
+  isLeadsLoading: boolean;
   t: (key: string) => string;
   handleFillCustomerNumber: (phoneNumber: string) => void;
 }
 
-export function CallHistoryCard({
-  visibleHistory,
-  isLoadingHistory,
+export function LeadsTable({
+  leads,
+  isLeadsLoading: isLoadingHistory,
   t,
   handleFillCustomerNumber,
 }: CallHistoryCardProps) {
+  useEffect(() => {
+    console.log(leads);
+  }, [leads]);
+
   return (
     <Card className="dark:border-[#D29D0E]/30 dark:bg-[#122347]/50">
+      {/* header */}
       <CardHeader className="pb-3">
         <CardTitle className="text-xl font-bold text-foreground dark:text-white">
           {t("history.title")}
@@ -31,6 +37,8 @@ export function CallHistoryCard({
           {t("history.subtitle")}
         </CardDescription>
       </CardHeader>
+
+      {/* leads list */}
       <CardContent>
         <Tabs defaultValue="recent" className="w-full">
           <div className="h-[500px] overflow-y-auto pr-2">
@@ -41,7 +49,7 @@ export function CallHistoryCard({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {visibleHistory.map((call, index) => (
+                  {leads.map((call, index) => (
                     <div
                       key={`${call.id ?? call.timestamp}-${
                         call.agentNumber
