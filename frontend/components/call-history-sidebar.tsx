@@ -14,7 +14,10 @@ import { fetchActiveLeads } from "@/lib/api";
 import { ActiveLeads } from "@/types/activeLeads.type";
 
 export function CallHistorySidebar() {
-  const [callHistory, setCallHistory] = useState<ActiveLeads>([]);
+  const [callHistory, setCallHistory] = useState<ActiveLeads>({
+    data: [],
+    metadata: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
+  });
   const [isLoading, setIsLoading] = useState(true);
   const { t, dir } = useLanguage();
 
@@ -24,7 +27,7 @@ export function CallHistorySidebar() {
   useEffect(() => {
     const loadCallHistory = async () => {
       try {
-        const history = await fetchActiveLeads();
+        const history = await fetchActiveLeads(1, 10); // Load first 10 items for sidebar
         setCallHistory(history);
       } catch (error) {
         console.error("Failed to load call history:", error);

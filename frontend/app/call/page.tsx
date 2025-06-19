@@ -15,8 +15,16 @@ import React, { useMemo } from "react";
 export default function CallingApp() {
   const { t, dir } = useLanguage();
 
-  // Call history hook
-  const { leads, isLeadsLoading, setCallHistory } = useCallHistory();
+  // Call history hook with pagination
+  const {
+    leads,
+    isLeadsLoading,
+    setCallHistory,
+    currentPage,
+    totalPages,
+    total,
+    handlePageChange,
+  } = useCallHistory();
 
   // Dialer hook
   const agentInputRef = React.useRef<HTMLInputElement>(null);
@@ -66,6 +74,8 @@ export default function CallingApp() {
       dir={dir}
     >
       <AppHeader />
+      <h1 className="some">hereee</h1>
+
       <div className="flex-1 container mx-auto px-4 py-6">
         <div className={`flex flex-row lg:${flexDirection} gap-6`}>
           <div className="lg:w-1/3">
@@ -105,12 +115,16 @@ export default function CallingApp() {
               t={t}
             />
 
-            {/* leads table */}
+            {/* leads table with pagination */}
             <LeadsTable
               leads={leads}
               isLeadsLoading={isLeadsLoading}
               t={t}
               handleFillCustomerNumber={handleFillCustomerNumber}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={handlePageChange}
             />
           </div>
         </div>

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import type React from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
-type Language = "en" | "he"
+type Language = "en" | "he";
 
 type Translations = {
   [key: string]: {
-    en: string
-    he: string
-  }
-}
+    en: string;
+    he: string;
+  };
+};
 
 // Add all translations here
 const translations: Translations = {
@@ -58,10 +58,6 @@ const translations: Translations = {
     en: "Leads",
     he: "לידים",
   },
-  "history.subtitle": {
-    "en": "List of leads",
-    "he": "רשימת לידים"
-  },
   "history.tabs.recent": {
     en: "List",
     he: "אחרונות",
@@ -80,7 +76,7 @@ const translations: Translations = {
   },
   "table.customer_name": {
     en: "Customer Name",
-    he: "שם הלקוח"
+    he: "שם הלקוח",
   },
   "table.agent": {
     en: "Agent Number",
@@ -170,51 +166,61 @@ const translations: Translations = {
     en: "Call in progress",
     he: "שיחה מתבצעת",
   },
-}
+  "history.viewFull": {
+    en: "View Full History",
+    he: "צפה בהיסטוריה מלאה",
+  },
+};
 
 type LanguageContextType = {
-  language: Language
-  setLanguage: (language: Language) => void
-  t: (key: string) => string
-  dir: string
-}
+  language: Language;
+  setLanguage: (language: Language) => void;
+  t: (key: string) => string;
+  dir: string;
+};
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined
+);
 
 export function LanguageProvider({
   children,
   defaultLanguage = "en",
 }: {
-  children: React.ReactNode
-  defaultLanguage?: Language
+  children: React.ReactNode;
+  defaultLanguage?: Language;
 }) {
-  const [language, setLanguage] = useState<Language>(defaultLanguage)
-  const [dir, setDir] = useState<string>("ltr")
+  const [language, setLanguage] = useState<Language>(defaultLanguage);
+  const [dir, setDir] = useState<string>("ltr");
 
   useEffect(() => {
     // Set the direction based on the language
-    setDir(language === "he" ? "rtl" : "ltr")
+    setDir(language === "he" ? "rtl" : "ltr");
     // Set the dir attribute on the html element
-    document.documentElement.dir = language === "he" ? "rtl" : "ltr"
+    document.documentElement.dir = language === "he" ? "rtl" : "ltr";
     // Set the lang attribute on the html element
-    document.documentElement.lang = language
-  }, [language])
+    document.documentElement.lang = language;
+  }, [language]);
 
   const t = (key: string): string => {
     if (!translations[key]) {
-      console.warn(`Translation key not found: ${key}`)
-      return key
+      console.warn(`Translation key not found: ${key}`);
+      return key;
     }
-    return translations[key][language]
-  }
+    return translations[key][language];
+  };
 
-  return <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>{children}</LanguageContext.Provider>
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
+      {children}
+    </LanguageContext.Provider>
+  );
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext)
+  const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error("useLanguage must be used within a LanguageProvider")
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
-  return context
+  return context;
 }

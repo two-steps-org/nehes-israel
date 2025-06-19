@@ -34,4 +34,5 @@ export type Lead = {
     time?: string
     timestamp?: string
     vendor?: string;
+    call_duration?: number;
 }

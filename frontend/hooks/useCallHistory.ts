@@ -1,52 +1,50 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { fetchActiveLeads } from "@/lib/api"
 import { ActiveLeads } from "@/types/activeLeads.type"
+import { PAGE_SIZE, DEFAULT_PAGE } from "@/lib/utils"
 
-export function useCallHistory(visibleCountInitial = 25) {
-    const [callHistory, setCallHistory] = useState<ActiveLeads>([])
+export function useCallHistory() {
+    const [callHistory, setCallHistory] = useState<ActiveLeads>({ data: [], metadata: { page: 1, pageSize: PAGE_SIZE, total: 0, totalPages: 0 } })
     const [isLeadsLoading, setIsLeadsLoading] = useState(true)
-    const [visibleCount, setVisibleCount] = useState(visibleCountInitial)
-    const [hasMoreData, setHasMoreData] = useState(true)
+    const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE)
+    const [pageSize] = useState(PAGE_SIZE)
 
-    useEffect(() => {
-        let mounted = true
-        const loadCallHistory = async () => {
-            try {
-                const history = await fetchActiveLeads()
-                if (mounted) setCallHistory(history)
-            } catch (error) {
-                throw error
-            } finally {
-                if (mounted) setIsLeadsLoading(false)
-            }
-        }
-        loadCallHistory()
-        return () => { mounted = false }
-    }, [])
-
-    const leads = useMemo(() => callHistory.data?.slice(0, visibleCount), [callHistory, visibleCount])
-
-    const reloadHistory = useCallback(async () => {
+    const loadCallHistory = useCallback(async (page: number = currentPage, size: number = pageSize) => {
         setIsLeadsLoading(true)
         try {
-            const history = await fetchActiveLeads()
+            const history = await fetchActiveLeads(page, size)
             setCallHistory(history)
         } catch (error) {
-            // Optionally handle error
+            console.error("Failed to load call history:", error)
+            // Set empty data on error
+            setCallHistory({ data: [], metadata: { page, pageSize: size, total: 0, totalPages: 0 } })
         } finally {
             setIsLeadsLoading(false)
         }
+    }, [currentPage, pageSize])
+
+    useEffect(() => {
+        loadCallHistory(currentPage, pageSize)
+    }, [currentPage, pageSize, loadCallHistory])
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page)
     }, [])
+
+    const reloadHistory = useCallback(async () => {
+        await loadCallHistory(currentPage, pageSize)
+    }, [loadCallHistory, currentPage, pageSize])
 
     return {
         callHistory,
-        leads,
+        leads: callHistory.data || [],
         isLeadsLoading,
-        visibleCount,
-        hasMoreData,
+        currentPage,
+        pageSize,
+        totalPages: callHistory.metadata?.totalPages || 0,
+        total: callHistory.metadata?.total || 0,
+        handlePageChange,
         reloadHistory,
         setCallHistory,
-        setVisibleCount,
-        setHasMoreData,
     }
 } 
