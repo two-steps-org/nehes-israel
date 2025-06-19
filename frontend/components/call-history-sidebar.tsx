@@ -1,45 +1,51 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { format } from "date-fns"
-import { Phone, PhoneOff } from "lucide-react"
-import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarRail } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { fetchMongoData } from "@/lib/api"
-import { useLanguage } from "@/components/language-provider"
-import { log } from "console"
+import { useEffect, useState } from "react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/components/language-provider";
+import { fetchActiveLeads } from "@/lib/api";
+import { ActiveLeads } from "@/types/activeLeads.type";
 
 export function CallHistorySidebar() {
-  const [callHistory, setCallHistory] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { t, dir } = useLanguage()
+  const [callHistory, setCallHistory] = useState<ActiveLeads>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { t, dir } = useLanguage();
 
   // Determine sidebar position based on language direction
-  const sidebarSide = dir === "rtl" ? "left" : "right"
+  const sidebarSide = dir === "rtl" ? "left" : "right";
 
   useEffect(() => {
     const loadCallHistory = async () => {
       try {
-        const history = await fetchMongoData();
-        setCallHistory(history)
-        
-        
+        const history = await fetchActiveLeads();
+        setCallHistory(history);
       } catch (error) {
-        console.error("Failed to load call history:", error)
+        console.error("Failed to load call history:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadCallHistory()
-  }, [])
+    loadCallHistory();
+  }, []);
 
   return (
     <Sidebar side={sidebarSide} variant="floating" collapsible="offcanvas">
       <SidebarHeader className="border-b dark:border-[#D29D0E]/30">
         <div className="p-4" dir={dir}>
-          <h2 className="text-xl font-bold text-[#122347] dark:text-[#D29D0E]">{t("history.title")}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-300">{t("history.subtitle")}</p>
+          <h2 className="text-xl font-bold text-[#122347] dark:text-[#D29D0E]">
+            {t("history.title")}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-300">
+            {t("history.subtitle")}
+          </p>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -49,9 +55,9 @@ export function CallHistorySidebar() {
           </div>
         ) : (
           <div className="space-y-2 p-4" dir={dir}>
-            {callHistory.map((call) => (
+            {callHistory.data?.map((call) => (
               <div
-                key={call.id}
+                key={call._id}
                 className="p-3 border rounded-md hover:bg-gray-50 transition-colors dark:border-[#D29D0E]/30 dark:hover:bg-[#D29D0E]/10"
               >
                 <div className="font-medium text-[#122347] dark:text-[#D29D0E]">
@@ -82,5 +88,5 @@ export function CallHistorySidebar() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

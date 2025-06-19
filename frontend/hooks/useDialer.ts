@@ -1,24 +1,35 @@
 import { useState, useRef, useCallback, RefObject } from "react"
-import { bridgeCall, fetchMongoData } from "@/lib/api"
+import { bridgeCall, fetchActiveLeads } from "@/lib/api"
+import { ActiveLeads } from "@/types/activeLeads.type";
+
+type CustomerNumber = {
+    id: number;
+    phone: string;
+}
 
 type FocusedInput = "agent" | { type: "customer"; idx: number } | null
 
-export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any[]) => void } = {}) {
+export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: ActiveLeads) => void } = {}) {
     const [agentNumber, setAgentNumber] = useState<string>("")
-    const [customerNumbers, setCustomerNumbers] = useState<string[]>(["", "", ""])
+    const [customerNumbers, setCustomerNumbers] = useState<CustomerNumber[]>([
+        { id: 1, phone: "" },
+        { id: 2, phone: "" },
+        { id: 3, phone: "" }
+    ])
     const [isCallInProgress, setIsCallInProgress] = useState<boolean>(false)
     const [agentCountryCode, setAgentCountryCode] = useState<string>("+972")
     const [customerCountryCodes, setCustomerCountryCodes] = useState<string[]>(["+972", "+972", "+972"])
     const [focusedInput, setFocusedInput] = useState<FocusedInput>(null)
+    const [isTripleCallMode, setIsTripleCallMode] = useState<boolean>(true)
     const agentInputRef = useRef<HTMLInputElement>(null)
 
     const handleCall = useCallback(async () => {
-        if (customerNumbers.every(num => !num.trim())) {
+        if (customerNumbers.every(num => !num.phone.trim())) {
             console.log('Early return: all customer numbers are empty');
             return;
         }
         const fullAgentNumber = agentNumber.trim() ? `${agentCountryCode}${(agentNumber.startsWith('0') ? agentNumber.slice(1) : agentNumber).trim()}` : ""
-        const numbersList = customerNumbers[0].trim() ? `${agentCountryCode}${(customerNumbers[0].startsWith('0') ? customerNumbers[0].slice(1) : customerNumbers[0]).trim()}` : ""
+        const numbersList = customerNumbers[0].phone.trim() ? `${agentCountryCode}${(customerNumbers[0].phone.startsWith('0') ? customerNumbers[0].phone.slice(1) : customerNumbers[0].phone).trim()}` : ""
 
         if (numbersList.length === 0) {
             console.log('Early return: numbersList is empty after filtering');
@@ -27,7 +38,7 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
         setIsCallInProgress(true)
         try {
             await bridgeCall(fullAgentNumber, numbersList)
-            const history = await fetchMongoData()
+            const history = await fetchActiveLeads()
             onHistoryUpdate?.(history)
         } catch (error) {
             console.error('Bridge call error:', error)
@@ -43,14 +54,14 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
             const { idx } = focusedInput
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] += value
+                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone + value }
                 return newNumbers
             })
         } else {
-            const idx = customerNumbers.findIndex(num => num === "") >= 0 ? customerNumbers.findIndex(num => num === "") : 0
+            const idx = customerNumbers.findIndex(num => num.phone === "") >= 0 ? customerNumbers.findIndex(num => num.phone === "") : 0
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] += value
+                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone + value }
                 return newNumbers
             })
             setFocusedInput({ type: "customer", idx })
@@ -64,15 +75,15 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
             const { idx } = focusedInput
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] = newNumbers[idx].slice(0, -1)
+                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone.slice(0, -1) }
                 return newNumbers
             })
         } else {
-            const idx = customerNumbers.map(num => !!num).lastIndexOf(true)
+            const idx = customerNumbers.map(num => !!num.phone).lastIndexOf(true)
             if (idx >= 0) {
                 setCustomerNumbers((prev) => {
                     const newNumbers = [...prev]
-                    newNumbers[idx] = newNumbers[idx].slice(0, -1)
+                    newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone.slice(0, -1) }
                     return newNumbers
                 })
                 setFocusedInput({ type: "customer", idx })
@@ -83,9 +94,9 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
     const handleFillCustomerNumber = useCallback((phoneNumber: string) => {
         setCustomerNumbers((prev) => {
             const updatedNumbers = [...prev]
-            const emptyIndex = updatedNumbers.findIndex((num) => num.trim() === "")
+            const emptyIndex = updatedNumbers.findIndex((num) => num.phone.trim() === "")
             if (emptyIndex !== -1) {
-                updatedNumbers[emptyIndex] = phoneNumber.toString()
+                updatedNumbers[emptyIndex] = { ...updatedNumbers[emptyIndex], phone: phoneNumber.toString() }
                 setCustomerCountryCodes((codes) => {
                     const updatedCodes = [...codes]
                     updatedCodes[emptyIndex] = "+972"
@@ -113,5 +124,7 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: any
         handleKeypadInput,
         handleKeypadBackspace,
         handleFillCustomerNumber,
+        isTripleCallMode,
+        setIsTripleCallMode,
     }
 } 

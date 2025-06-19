@@ -1,3 +1,5 @@
+import { ActiveLeads } from "@/types/activeLeads.type";
+
 const dev = process.env.NEXT_PUBLIC_DEV_URL;
 const prod = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -49,12 +51,12 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
   };
 }
 
-export async function fetchMongoData(): Promise<any[]> {
+export async function fetchActiveLeads(): Promise<ActiveLeads> {
   const response = await fetch(`${BACKEND_URL}/api/mongo-data`);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }
-  return await response.json();
+  return await response.json() as ActiveLeads;
 }
 
 // interfaces

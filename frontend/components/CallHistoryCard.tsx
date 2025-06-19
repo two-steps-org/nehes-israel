@@ -11,7 +11,6 @@ import React from "react";
 interface CallHistoryCardProps {
   visibleHistory: any[];
   isLoadingHistory: boolean;
-  handleScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   t: (key: string) => string;
   handleFillCustomerNumber: (phoneNumber: string) => void;
 }
@@ -19,7 +18,6 @@ interface CallHistoryCardProps {
 export function CallHistoryCard({
   visibleHistory,
   isLoadingHistory,
-  handleScroll,
   t,
   handleFillCustomerNumber,
 }: CallHistoryCardProps) {
@@ -35,10 +33,7 @@ export function CallHistoryCard({
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="recent" className="w-full">
-          <div
-            className="h-[500px] overflow-y-auto pr-2"
-            onScroll={handleScroll}
-          >
+          <div className="h-[500px] overflow-y-auto pr-2">
             <TabsContent value="recent" className="mt-0">
               {isLoadingHistory ? (
                 <div className="flex justify-center items-center h-40">

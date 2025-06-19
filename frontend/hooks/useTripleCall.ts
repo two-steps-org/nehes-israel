@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react"
-import { tripleCallLeads, fetchMongoData, Lead } from "@/lib/api"
+import { tripleCallLeads, Lead, fetchActiveLeads } from "@/lib/api"
+import { ActiveLeads } from "@/types/activeLeads.type";
 
-export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: Lead[]) => void, onHistoryUpdate?: (history: any[]) => void } = {}) {
+export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: Lead[]) => void, onHistoryUpdate?: (history: ActiveLeads) => void } = {}) {
     const [isTripleCallInProgress, setIsTripleCallInProgress] = useState<boolean>(false)
     const [tripleCallStatus, setTripleCallStatus] = useState<{ show: boolean; success: boolean; message: string }>({ show: false, success: false, message: "" })
     const [activeLeads, setActiveLeads] = useState<Lead[]>([])
@@ -23,7 +24,7 @@ export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: 
                 setActiveLeads(result.leads)
                 onLeads?.(result.leads)
             }
-            const history = await fetchMongoData()
+            const history = await fetchActiveLeads()
             onHistoryUpdate?.(history)
             setTimeout(() => setTripleCallStatus((prev) => ({ ...prev, show: false })), 5000)
         } catch (error: any) {

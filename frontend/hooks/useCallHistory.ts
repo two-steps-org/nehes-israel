@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { fetchMongoData } from "@/lib/api"
+import { fetchActiveLeads } from "@/lib/api"
+import { ActiveLeads } from "@/types/activeLeads.type"
 
 export function useCallHistory(visibleCountInitial = 25) {
-    const [callHistory, setCallHistory] = useState<any[]>([])
+    const [callHistory, setCallHistory] = useState<ActiveLeads>([])
     const [isLoadingHistory, setIsLoadingHistory] = useState(true)
     const [visibleCount, setVisibleCount] = useState(visibleCountInitial)
     const [hasMoreData, setHasMoreData] = useState(true)
@@ -11,10 +12,10 @@ export function useCallHistory(visibleCountInitial = 25) {
         let mounted = true
         const loadCallHistory = async () => {
             try {
-                const history = await fetchMongoData()
+                const history = await fetchActiveLeads()
                 if (mounted) setCallHistory(history)
             } catch (error) {
-                // Optionally handle error
+                throw error
             } finally {
                 if (mounted) setIsLoadingHistory(false)
             }
@@ -23,29 +24,12 @@ export function useCallHistory(visibleCountInitial = 25) {
         return () => { mounted = false }
     }, [])
 
-    const visibleHistory = useMemo(() => callHistory.slice(0, visibleCount), [callHistory, visibleCount])
-
-    const handleScroll = useCallback(async (e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-        if (scrollTop + clientHeight >= scrollHeight - 10 && hasMoreData) {
-            try {
-                const history = await fetchMongoData()
-                if (history.length > callHistory.length) {
-                    setCallHistory(history)
-                    setVisibleCount((prev) => prev + 5)
-                } else {
-                    setHasMoreData(false)
-                }
-            } catch (error) {
-                // Optionally handle error
-            }
-        }
-    }, [callHistory, hasMoreData])
+    const visibleHistory = useMemo(() => callHistory.data?.slice(0, visibleCount), [callHistory, visibleCount])
 
     const reloadHistory = useCallback(async () => {
         setIsLoadingHistory(true)
         try {
-            const history = await fetchMongoData()
+            const history = await fetchActiveLeads()
             setCallHistory(history)
         } catch (error) {
             // Optionally handle error
@@ -60,7 +44,6 @@ export function useCallHistory(visibleCountInitial = 25) {
         isLoadingHistory,
         visibleCount,
         hasMoreData,
-        handleScroll,
         reloadHistory,
         setCallHistory,
         setVisibleCount,
