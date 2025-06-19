@@ -5,7 +5,7 @@ from routes.twilio_routes import twilio_bp
 from routes.mongo_routes import mongo_bp
 from routes.base_routes import base_bp
 import os
-
+ 
 load_dotenv()
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ CORS(app, origins="*")
 # CORS(app, origins=[
 #     "http://localhost:3000",
 #     "https://the-actual-domain.com"
-# ])
+# ]) 
 
 app.register_blueprint(base_bp)
 app.register_blueprint(twilio_bp)

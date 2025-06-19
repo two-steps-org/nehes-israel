@@ -1,69 +1,50 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
-import { fetchMongoData } from "@/lib/api"
+import { useState, useEffect, useCallback } from "react"
+import { fetchActiveLeads } from "@/lib/api"
+import { ActiveLeads } from "@/types/activeLeads.type"
+import { PAGE_SIZE, DEFAULT_PAGE } from "@/lib/utils"
 
-export function useCallHistory(visibleCountInitial = 25) {
-    const [callHistory, setCallHistory] = useState<any[]>([])
-    const [isLoadingHistory, setIsLoadingHistory] = useState(true)
-    const [visibleCount, setVisibleCount] = useState(visibleCountInitial)
-    const [hasMoreData, setHasMoreData] = useState(true)
+export function useCallHistory() {
+    const [callHistory, setCallHistory] = useState<ActiveLeads>({ data: [], metadata: { page: 1, pageSize: PAGE_SIZE, total: 0, totalPages: 0 } })
+    const [isLeadsLoading, setIsLeadsLoading] = useState(true)
+    const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE)
+    const [pageSize] = useState(PAGE_SIZE)
 
-    useEffect(() => {
-        let mounted = true
-        const loadCallHistory = async () => {
-            try {
-                const history = await fetchMongoData()
-                if (mounted) setCallHistory(history)
-            } catch (error) {
-                // Optionally handle error
-            } finally {
-                if (mounted) setIsLoadingHistory(false)
-            }
-        }
-        loadCallHistory()
-        return () => { mounted = false }
-    }, [])
-
-    const visibleHistory = useMemo(() => callHistory.slice(0, visibleCount), [callHistory, visibleCount])
-
-    const handleScroll = useCallback(async (e: React.UIEvent<HTMLDivElement>) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-        if (scrollTop + clientHeight >= scrollHeight - 10 && hasMoreData) {
-            try {
-                const history = await fetchMongoData()
-                if (history.length > callHistory.length) {
-                    setCallHistory(history)
-                    setVisibleCount((prev) => prev + 5)
-                } else {
-                    setHasMoreData(false)
-                }
-            } catch (error) {
-                // Optionally handle error
-            }
-        }
-    }, [callHistory, hasMoreData])
-
-    const reloadHistory = useCallback(async () => {
-        setIsLoadingHistory(true)
+    const loadCallHistory = useCallback(async (page: number = currentPage, size: number = pageSize) => {
+        setIsLeadsLoading(true)
         try {
-            const history = await fetchMongoData()
+            const history = await fetchActiveLeads(page, size)
             setCallHistory(history)
         } catch (error) {
-            // Optionally handle error
+            console.error("Failed to load call history:", error)
+            // Set empty data on error
+            setCallHistory({ data: [], metadata: { page, pageSize: size, total: 0, totalPages: 0 } })
         } finally {
-            setIsLoadingHistory(false)
+            setIsLeadsLoading(false)
         }
+    }, [currentPage, pageSize])
+
+    useEffect(() => {
+        loadCallHistory(currentPage, pageSize)
+    }, [currentPage, pageSize, loadCallHistory])
+
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page)
     }, [])
+
+    const reloadHistory = useCallback(async () => {
+        await loadCallHistory(currentPage, pageSize)
+    }, [loadCallHistory, currentPage, pageSize])
 
     return {
         callHistory,
-        visibleHistory,
-        isLoadingHistory,
-        visibleCount,
-        hasMoreData,
-        handleScroll,
+        leads: callHistory.data || [],
+        isLeadsLoading,
+        currentPage,
+        pageSize,
+        totalPages: callHistory.metadata?.totalPages || 0,
+        total: callHistory.metadata?.total || 0,
+        handlePageChange,
         reloadHistory,
         setCallHistory,
-        setVisibleCount,
-        setHasMoreData,
     }
 } 

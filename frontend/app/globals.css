@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Custom Scrollbar - Move outside of layers to ensure it's not purged */
+  /* Firefox */
+  .scrollbar-hide {
+    scrollbar-width: none !important;
+  }
+
+  /* Chrome, Edge, and Safari */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Custom scrollbar styling */
+  *::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary));
+    border-radius: 14px;
+  }
+}
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

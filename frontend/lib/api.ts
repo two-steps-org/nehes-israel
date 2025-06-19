@@ -1,3 +1,5 @@
+import { ActiveLeads, Lead } from "@/types/activeLeads.type";
+
 const dev = process.env.NEXT_PUBLIC_DEV_URL;
 const prod = process.env.NEXT_PUBLIC_SERVER_URL;
 
@@ -18,10 +20,10 @@ export async function bridgeCall(agentNumber: string, customerNumbers: string): 
 }
 
 export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promise<TripleCallResult> {
-  const leadsNumbers = leads.map((lead) => lead.phoneNumber)
+  const leadsNumbers = leads.map((lead) => lead.phone_number)
 
   // Ensure we have at least 3 leads
-  if (leads.length < 3 || leads.some((lead, index) => leads.findIndex(l => l.phoneNumber === lead.phoneNumber) !== index)) {
+  if (leads.length < 3 || leads.some((lead, index) => leads.findIndex(l => l.phone_number === lead.phone_number) !== index)) {
     throw new Error("Leads are not valid. Please check the leads numbers.");
   }
 
@@ -49,20 +51,14 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
   };
 }
 
-export async function fetchMongoData(): Promise<any[]> {
-  const response = await fetch(`${BACKEND_URL}/api/mongo-data`);
+export async function fetchActiveLeads(page: number = 1, pageSize: number = 20): Promise<ActiveLeads> {
+  const response = await fetch(`${BACKEND_URL}/api/mongo-data?page=${page}&pageSize=${pageSize}`);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }
-  return await response.json();
+  return await response.json() as ActiveLeads;
 }
 
-// interfaces
-export interface Lead {
-  id: string;
-  phoneNumber: string;
-  name?: string;
-}
 export interface TripleCallResult {
   success: boolean;
   message: string;
