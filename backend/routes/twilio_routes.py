@@ -126,7 +126,7 @@ def twilio_callback():
     to_number = form.get("To")
     duration = form.get("CallDuration")
     print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
-    update_sheet_status(call_sid, call_status, duration, from_number, to_number)
+    # update_sheet_status(call_sid, call_status, duration, from_number, to_number)
     return ("", 204) 
 
 
