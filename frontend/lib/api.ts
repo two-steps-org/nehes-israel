@@ -51,8 +51,9 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
   };
 }
 
-export async function fetchActiveLeads(page: number = 1, pageSize: number = 20): Promise<ActiveLeads> {
-  const response = await fetch(`${BACKEND_URL}/api/mongo-data?page=${page}&pageSize=${pageSize}`);
+export async function fetchActiveLeads(page: number = 1, pageSize: number = 20, search: string = ""): Promise<ActiveLeads> {
+  const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
+  const response = await fetch(`${BACKEND_URL}/api/leads-data?page=${page}&pageSize=${pageSize}${searchParam}`);
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }

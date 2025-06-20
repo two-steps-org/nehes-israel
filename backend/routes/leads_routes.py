@@ -2,22 +2,25 @@ from flask import Blueprint, request, jsonify
 from utils.db import collection
 from datetime import datetime
 
-mongo_bp = Blueprint('mongo', __name__)
+leads_bp = Blueprint('leads', __name__)
 
-@mongo_bp.route("/api/mongo-data", methods=["GET"])
-def get_mongo_data():
+@leads_bp.route("/api/leads-data", methods=["GET"])
+def get_leads_data():
     try:
         page = int(request.args.get('page', 1))
         pageSize = int(request.args.get('pageSize', 10))
-        
+        search = request.args.get('search', '')
+
         pipeline = [
             {
                 "$facet": {
                     "data": [
+                        {"$match": {"$or": [{"full_name": {"$regex": search, "$options": "i"}}, {"phone_number": {"$regex": search, "$options": "i"}}]}},
                         {"$skip": (page - 1) * pageSize},
                         {"$limit": pageSize}
                     ],
                     "metadata": [
+                        {"$match": {"$or": [{"full_name": {"$regex": search, "$options": "i"}}, {"phone_number": {"$regex": search, "$options": "i"}}]}},
                         {"$count": "total"},
                         {
                             "$addFields": {
@@ -52,7 +55,7 @@ def get_mongo_data():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-@mongo_bp.route('/api/update-missing-iscalls', methods=['POST'])
+@leads_bp.route('/api/update-missing-iscalls', methods=['POST'])
 def update_missing_iscalls():
     data = request.json
     phone_numbers = data.get('phoneNumbers', [])
@@ -65,4 +68,4 @@ def update_missing_iscalls():
     return jsonify({
         "matched": result.matched_count,
         "modified": result.modified_count
-    }), 200 
+    }), 200
