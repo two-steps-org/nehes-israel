@@ -9,10 +9,10 @@ export function useCallHistory() {
     const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE)
     const [pageSize] = useState(PAGE_SIZE)
 
-    const loadCallHistory = useCallback(async (page: number = currentPage, size: number = pageSize) => {
+    const loadCallHistory = useCallback(async (page: number, size: number, search: string = "") => {
         setIsLeadsLoading(true)
         try {
-            const history = await fetchActiveLeads(page, size)
+            const history = await fetchActiveLeads(page, size, search)
             setCallHistory(history)
         } catch (error) {
             console.error("Failed to load call history:", error)
@@ -21,18 +21,18 @@ export function useCallHistory() {
         } finally {
             setIsLeadsLoading(false)
         }
-    }, [currentPage, pageSize])
+    }, [pageSize])
 
     useEffect(() => {
         loadCallHistory(currentPage, pageSize)
-    }, [currentPage, pageSize, loadCallHistory])
+    }, [currentPage, loadCallHistory, pageSize])
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
     }, [])
 
-    const reloadHistory = useCallback(async () => {
-        await loadCallHistory(currentPage, pageSize)
+    const reloadHistory = useCallback(async (search: string = "") => {
+        await loadCallHistory(currentPage, pageSize, search)
     }, [loadCallHistory, currentPage, pageSize])
 
     return {
@@ -46,5 +46,6 @@ export function useCallHistory() {
         handlePageChange,
         reloadHistory,
         setCallHistory,
+        loadCallHistory,
     }
 } 

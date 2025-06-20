@@ -10,7 +10,7 @@ import { ActiveLeadsCard } from "@/components/ActiveLeadsCard";
 import { StatusAlert } from "@/components/StatusAlert";
 import { LeadsTable } from "@/components/LeadsTable";
 import { ActiveLeads } from "@/types/activeLeads.type";
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 
 export default function CallingApp() {
   const { t, dir } = useLanguage();
@@ -24,6 +24,7 @@ export default function CallingApp() {
     totalPages,
     total,
     handlePageChange,
+    loadCallHistory,
   } = useCallHistory();
 
   // Dialer hook
@@ -67,6 +68,15 @@ export default function CallingApp() {
     [dir]
   );
   const flexDirection = dir === "rtl" ? "flex-row-reverse" : "flex-row";
+
+  // Memoize the search handler to prevent recreating on every render
+  const handleSearch = useCallback(
+    async (searchQuery: string, resetPage?: boolean) => {
+      const targetPage = resetPage ? 1 : currentPage;
+      await loadCallHistory(targetPage, 20, searchQuery);
+    },
+    [loadCallHistory, currentPage]
+  );
 
   return (
     <div
@@ -124,6 +134,7 @@ export default function CallingApp() {
               totalPages={totalPages}
               total={total}
               onPageChange={handlePageChange}
+              onSearch={handleSearch}
             />
           </div>
         </div>

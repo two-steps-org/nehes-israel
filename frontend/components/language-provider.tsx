@@ -78,6 +78,14 @@ const translations: Translations = {
     en: "Customer Number",
     he: "מספר לקוח",
   },
+  "table.search.placeholder": {
+    en: "Search by name or phone number",
+    he: "חפש לפי שם או מספר טלפון",
+  },
+  "table.search.clear": {
+    en: "Clear",
+    he: "נקה",
+  },
   "table.customer_name": {
     en: "Customer Name",
     he: "שם הלקוח",

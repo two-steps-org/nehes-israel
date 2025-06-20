@@ -7,3 +7,4 @@ export function cn(...inputs: ClassValue[]) {
 
 export const PAGE_SIZE = 20;
 export const DEFAULT_PAGE = 1;
+export const DEBOUND_DELAY = 700;
