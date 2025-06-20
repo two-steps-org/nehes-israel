@@ -41,12 +41,11 @@ def get_leads_data():
                 }
             }
         ]
-        # add postman example 
 
         result = list(collection.aggregate(pipeline))
         if not result:
             return jsonify({"data": [], "metadata": {}})
-        response = result[0] 
+        response = result[0]
         # Add timestamp and convert ObjectId to string
         for record in response.get("data", []):
             record["timestamp"] = datetime.utcnow().isoformat()
@@ -69,4 +68,4 @@ def update_missing_iscalls():
     return jsonify({
         "matched": result.matched_count,
         "modified": result.modified_count
-    }), 200 
+    }), 200

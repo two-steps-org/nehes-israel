@@ -62,9 +62,10 @@ export function LeadsTable({
             </span>
             <Button
               variant="outline"
+              className="px-2 py-0"
               onClick={() => setIsFiltersOpen(!isFiltersOpen)}
             >
-              <FilterIcon className="w-4 h-4" />
+              <FilterIcon className="w-3 h-3" />
             </Button>
           </div>
         </CardTitle>
