@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, RefObject } from "react"
-import { bridgeCall, fetchActiveLeads, Lead } from "@/lib/api"
+import { bridgeCall, fetchActiveLeads } from "@/lib/api"
+import { Lead } from "@/types/activeLeads.type";
 import { ActiveLeads } from "@/types/activeLeads.type";
 
 type CustomerNumber = {
@@ -9,7 +10,7 @@ type CustomerNumber = {
 
 type FocusedInput = "agent" | { type: "customer"; idx: number } | null
 
-export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: ActiveLeads) => void } = {}) {
+export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?: (history: ActiveLeads) => void, onActiveLeads?: (leads: Lead[]) => void } = {}) {
     const [agentNumber, setAgentNumber] = useState<string>("")
     const [customerNumbers, setCustomerNumbers] = useState<CustomerNumber[]>([
         { id: 1, phone: "" },
@@ -38,6 +39,17 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: Act
         setIsCallInProgress(true)
         try {
             await bridgeCall(fullAgentNumber, numbersList)
+            if (onActiveLeads) {
+                onActiveLeads([
+                    {
+                        _id: `${customerNumbers[0].id}-${customerNumbers[0].phone.trim()}`,
+                        phone_number: customerNumbers[0].phone.trim(),
+                        createdAt: '',
+                        meeting_scheduled: '',
+                        meeting_attended: '',
+                    },
+                ]);
+            }
             const history = await fetchActiveLeads()
             onHistoryUpdate?.(history)
         } catch (error) {
@@ -45,15 +57,18 @@ export function useDialer({ onHistoryUpdate }: { onHistoryUpdate?: (history: Act
         } finally {
             setIsCallInProgress(false)
         }
-    }, [agentNumber, customerNumbers, agentCountryCode, customerCountryCodes, onHistoryUpdate])
+    }, [agentNumber, customerNumbers, agentCountryCode, customerCountryCodes, onHistoryUpdate, onActiveLeads])
 
     const mapCustomerNumbersToLeads = useCallback((): Lead[] => {
         return customerNumbers
             .map((customerNumber) =>
                 customerNumber.phone.trim()
                     ? {
-                        id: `${customerNumber.id}-${customerNumber.phone.trim()}`,
-                        phoneNumber: customerNumber.phone.trim(),
+                        _id: `${customerNumber.id}-${customerNumber.phone.trim()}`,
+                        phone_number: customerNumber.phone.trim(),
+                        createdAt: '',
+                        meeting_scheduled: '',
+                        meeting_attended: '',
                     }
                     : null
             )

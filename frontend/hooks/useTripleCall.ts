@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react"
-import { tripleCallLeads, Lead, fetchActiveLeads } from "@/lib/api"
-import { ActiveLeads } from "@/types/activeLeads.type";
+import { tripleCallLeads, fetchActiveLeads } from "@/lib/api"
+import { Lead, ActiveLeads } from "@/types/activeLeads.type";
 
 export function useTripleCall({ onLeads, onHistoryUpdate }: { onLeads?: (leads: Lead[]) => void, onHistoryUpdate?: (history: ActiveLeads) => void } = {}) {
     const [isTripleCallInProgress, setIsTripleCallInProgress] = useState<boolean>(false)
