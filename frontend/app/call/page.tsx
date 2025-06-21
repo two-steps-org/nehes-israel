@@ -102,6 +102,8 @@ export default function CallingApp() {
     isTripleCallMode,
     setIsTripleCallMode,
     mapCustomerNumbersToLeads,
+    agentValidationError,
+    validateAgentNumber,
   } = useDialer({
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
     onActiveLeads: setActiveLeads,
@@ -164,6 +166,16 @@ export default function CallingApp() {
     agentNumber: string,
     leads: any[]
   ) => {
+    // Validate agent number before proceeding with triple call
+    const agentError = validateAgentNumber(agentNumber);
+    if (agentError) {
+      console.log(
+        "Triple call cancelled: agent number validation failed:",
+        agentError
+      );
+      return;
+    }
+
     connectSocket();
     await handleTripleCall(agentNumber, leads);
     setTimeout(disconnectSocket, 60000);
@@ -172,10 +184,16 @@ export default function CallingApp() {
   // Memoize the search handler to prevent recreating on every render
   const handleSearch = useCallback(
     async (searchQuery: string, resetPage?: boolean) => {
-      const targetPage = resetPage ? 1 : currentPage;
-      await loadCallHistory(targetPage, 20, searchQuery);
+      if (resetPage && currentPage !== 1) {
+        // Reset to page 1 and load data
+        handlePageChange(1);
+        await loadCallHistory(1, 20, searchQuery);
+      } else {
+        // Use current page
+        await loadCallHistory(currentPage, 20, searchQuery);
+      }
     },
-    [loadCallHistory, currentPage]
+    [loadCallHistory, currentPage, handlePageChange]
   );
 
   return (
@@ -212,6 +230,7 @@ export default function CallingApp() {
               isTripleCallMode={isTripleCallMode}
               setIsTripleCallMode={setIsTripleCallMode}
               handleCustomerNumberChange={handleCustomerNumberChange}
+              agentValidationError={agentValidationError}
             />
           </div>
           <div className="lg:w-2/3 space-y-6">

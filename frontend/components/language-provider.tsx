@@ -210,6 +210,16 @@ const translations: Translations = {
     he: "הזן את מספר הטלפון של הלקוח",
   },
 
+  // validation
+  "validation.agent.required": {
+    en: "Agent phone number is required",
+    he: "מספר טלפון של הסוכן נדרש",
+  },
+  "validation.agent.min_digits": {
+    en: "Agent phone number must be at least 9 digits",
+    he: "מספר טלפון של הסוכן חייב להיות לפחות 9 ספרות",
+  },
+
   // alert
   "alert.success": {
     en: "Success",
@@ -226,8 +236,8 @@ const translations: Translations = {
 
   // active leads
   "activeLeads.title": {
-    en: "Active Leads",
-    he: "לידים פעילים",
+    en: "Active Call",
+    he: "שיחה פעילה",
   },
   "activeLeads.description": {
     en: "Currently calling these leads",
