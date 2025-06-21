@@ -3,16 +3,17 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Lead } from "@/types/activeLeads.type";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { FilterIcon, Search, X } from "lucide-react";
+import { FilterIcon } from "lucide-react";
 import { Pagination } from "./Pagination";
 import { useLeadsSearch } from "@/hooks/useLeadsSearch";
 import { DEBOUND_DELAY } from "@/lib/utils";
+import { useLanguage } from "./language-provider";
+import { SearchInput } from "./SearchInput";
+import { LeadCard } from "./LeadCard";
 
 interface CallHistoryCardProps {
   leads: Lead[];
   isLeadsLoading: boolean;
-  t: (key: string) => string;
   handleFillCustomerNumber: (phoneNumber: string) => void;
   currentPage: number;
   totalPages: number;
@@ -21,17 +22,18 @@ interface CallHistoryCardProps {
   onSearch: (searchQuery: string, resetPage?: boolean) => void;
 }
 
-export function LeadsTable({
-  leads,
-  isLeadsLoading: isLoadingHistory,
-  t,
-  handleFillCustomerNumber,
-  currentPage,
-  totalPages,
-  total,
-  onPageChange,
-  onSearch,
-}: CallHistoryCardProps) {
+export function LeadsTable(props: CallHistoryCardProps) {
+  const {
+    leads,
+    isLeadsLoading: isLoadingHistory,
+    handleFillCustomerNumber,
+    currentPage,
+    totalPages,
+    total,
+    onPageChange,
+    onSearch,
+  } = props;
+  const { t } = useLanguage();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Use the comprehensive search hook that handles all debouncing logic
@@ -72,33 +74,15 @@ export function LeadsTable({
 
         {/* Search input - shown/hidden based on filters state */}
         {isFiltersOpen && (
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              type="text"
-              placeholder={
-                t("table.search.placeholder") || "Search by name or phone..."
-              }
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10"
-            />
-            {isSearching && (
-              <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#122347] dark:border-[#D29D0E]" />
-              </div>
-            )}
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearSearch}
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          <SearchInput
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onClearSearch={handleClearSearch}
+            isSearching={isSearching}
+            placeholder={
+              t("table.search.placeholder") || "Search by name or phone..."
+            }
+          />
         )}
       </CardHeader>
 
@@ -106,7 +90,7 @@ export function LeadsTable({
       <CardContent className="flex-1 flex flex-col">
         <Tabs
           defaultValue="recent"
-          className="w-full flex flex-col flex-1 max-h-[calc(100vh-310px)]"
+          className="w-full flex flex-col flex-1 max-h-[calc(100vh-340px)]"
         >
           <div
             className="flex-1 overflow-y-auto pr-2"
@@ -128,49 +112,14 @@ export function LeadsTable({
               ) : (
                 <div className="space-y-3">
                   {leads.map((lead, index) => (
-                    <div
+                    <LeadCard
                       key={`${lead._id ?? lead.timestamp}-${
                         lead.phone_number
                       }-${index}`}
-                      onClick={() => {
-                        if (lead.phone_number) {
-                          handleFillCustomerNumber(lead.phone_number);
-                        }
-                      }}
-                      className="p-3 border rounded-md hover:bg-gray-50 transition-colors dark:border-[#D29D0E]/30 dark:hover:bg-[#D29D0E]/10 cursor-pointer"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="font-medium text-foreground dark:text-[#D29D0E]">
-                            {t("table.customer_name")} :{" "}
-                            {lead.full_name ? lead.full_name : "N/A"}
-                          </div>
-                          <div className="text-sm text-muted-foreground dark:text-gray-300">
-                            {t("table.customer")}: {lead.phone_number}
-                          </div>
-                          <div className="text-sm text-muted-foreground dark:text-gray-300">
-                            {t("table.status")}: {lead.status}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className="text-xs">
-                            {lead.isCalled == "yes" ? (
-                              <span className="bg-[#D29D0E] text-white px-2 py-1 rounded-md">
-                                Called
-                              </span>
-                            ) : (
-                              <span className="text-red-500">Not Called</span>
-                            )}
-                          </span>
-
-                          {lead?.call_duration && lead.call_duration > 0 && (
-                            <span className="text-xs text-muted-foreground dark:text-gray-300">
-                              {lead.call_duration}s
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                      lead={lead}
+                      index={index}
+                      onLeadClick={handleFillCustomerNumber}
+                    />
                   ))}
                 </div>
               )}

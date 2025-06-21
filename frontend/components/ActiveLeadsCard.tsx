@@ -7,18 +7,18 @@ import {
 } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import React from "react";
+import { useLanguage } from "./language-provider";
 
 interface ActiveLeadsCardProps {
   activeLeads: any[];
   iconMarginClass: string;
-  t: (key: string) => string;
 }
 
 export function ActiveLeadsCard({
   activeLeads,
   iconMarginClass,
-  t,
 }: ActiveLeadsCardProps) {
+  const { t } = useLanguage();
   if (!activeLeads.length) return null;
   return (
     <Card className="dark:border-[#D29D0E]/30 dark:bg-[#122347]/50">

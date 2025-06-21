@@ -80,6 +80,7 @@ export function DialerCard(props: DialerCardProps) {
     <div className="h-full">
       <div className="h-full dark:border-[#D29D0E]/30 dark:bg-[#122347]/50">
         <div className="px-6">
+          {/* Call button */}
           <Button
             onClick={handleButtonClick}
             disabled={isButtonDisabled}
@@ -90,6 +91,7 @@ export function DialerCard(props: DialerCardProps) {
             {buttonText}
           </Button>
 
+          {/* Triple call checkbox */}
           <div className="flex items-center space-x-2 gap-x-2 py-4">
             <Checkbox
               id="useTripleCall"
@@ -106,6 +108,7 @@ export function DialerCard(props: DialerCardProps) {
             </Label>
           </div>
 
+          {/* Agent number input */}
           <div className="space-y-2">
             <Label
               htmlFor="agentNumber"
@@ -126,6 +129,7 @@ export function DialerCard(props: DialerCardProps) {
             />
           </div>
 
+          {/* Customer number inputs */}
           <div className="space-y-2 mt-4">
             <Label
               htmlFor="customerNumbers"

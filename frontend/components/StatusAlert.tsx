@@ -1,13 +1,14 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle, AlertCircle } from "lucide-react";
 import React from "react";
+import { useLanguage } from "./language-provider";
 
 interface StatusAlertProps {
   tripleCallStatus: { show: boolean; success: boolean; message: string };
-  t: (key: string) => string;
 }
 
-export function StatusAlert({ tripleCallStatus, t }: StatusAlertProps) {
+export function StatusAlert({ tripleCallStatus }: StatusAlertProps) {
+  const { t } = useLanguage();
   if (!tripleCallStatus.show) return null;
   return (
     <Alert
