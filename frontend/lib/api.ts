@@ -64,6 +64,7 @@ export interface TripleCallResult {
   message: string;
   leads: Lead[];
 }
+
 export type CallRecord = {
   id?: string
   full_name?: string

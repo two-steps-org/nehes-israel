@@ -106,7 +106,7 @@ export function LeadsTable(props: CallHistoryCardProps) {
               ) : leads.length === 0 ? (
                 <div className="flex justify-center items-center h-40">
                   <p className="text-muted-foreground dark:text-gray-300">
-                    No leads found
+                    {t("table.no_leads_found")}
                   </p>
                 </div>
               ) : (

@@ -131,6 +131,10 @@ const translations: Translations = {
     en: "Called",
     he: "בוצעה שיחה",
   },
+  "table.no_leads_found": {
+    en: "No leads found",
+    he: "לא נמצאו לידים",
+  },
 
   // status
   "status.connected": {
