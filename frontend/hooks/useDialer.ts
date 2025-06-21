@@ -1,7 +1,9 @@
-import { useState, useRef, useCallback, RefObject } from "react"
+import { useState, useRef, useCallback, RefObject, useEffect } from "react"
 import { bridgeCall, fetchActiveLeads } from "@/lib/api"
 import { Lead } from "@/types/activeLeads.type";
 import { ActiveLeads } from "@/types/activeLeads.type";
+import { useLocalStorage } from "./useLocalStorage";
+import { useLanguage } from "@/components/language-provider";
 
 type CustomerNumber = {
     id: number;
@@ -21,7 +23,41 @@ export function useDialer({
     onPhoneNumberComplete?: (phoneNumber: string) => void;
     onPhoneNumberDeleted?: (position: number, previousPhoneNumber: string) => void;
 } = {}) {
-    const [agentNumber, setAgentNumber] = useState<string>("")
+    // Use localStorage for agent number with validation
+    const [agentNumber, setAgentNumberLS] = useLocalStorage<string>("agent_phone_number", "")
+    const [agentValidationError, setAgentValidationError] = useState<string>("")
+
+    // Get translation function
+    const { t } = useLanguage()
+
+    // Agent number validation function
+    const validateAgentNumber = useCallback((number: string): string => {
+        const cleanNumber = number.trim()
+
+        if (!cleanNumber) {
+            return t("validation.agent.required")
+        }
+
+        // Remove any non-digit characters for validation
+        const digitsOnly = cleanNumber.replace(/\D/g, '')
+
+        if (digitsOnly.length < 9) {
+            return t("validation.agent.min_digits")
+        }
+
+        return "" // No error
+    }, [t])
+
+    // Wrapper for setAgentNumber with validation
+    const setAgentNumber = useCallback((value: string | ((prev: string) => string)) => {
+        const newValue = typeof value === 'function' ? value(agentNumber) : value
+        setAgentNumberLS(newValue)
+
+        // Validate and set error
+        const error = validateAgentNumber(newValue)
+        setAgentValidationError(error)
+    }, [agentNumber, setAgentNumberLS, validateAgentNumber])
+
     const [customerNumbers, setCustomerNumbers] = useState<CustomerNumber[]>([
         { id: 1, phone: "" },
         { id: 2, phone: "" },
@@ -34,7 +70,22 @@ export function useDialer({
     const [isTripleCallMode, setIsTripleCallMode] = useState<boolean>(true)
     const agentInputRef = useRef<HTMLInputElement>(null)
 
+    // Initialize validation on component mount
+    useEffect(() => {
+        const error = validateAgentNumber(agentNumber)
+        setAgentValidationError(error)
+    }, [agentNumber, validateAgentNumber])
+
     const handleCall = useCallback(async () => {
+        // Validate agent number before proceeding
+        const agentError = validateAgentNumber(agentNumber)
+        setAgentValidationError(agentError)
+
+        if (agentError) {
+            console.log('Early return: agent number validation failed:', agentError);
+            return;
+        }
+
         if (customerNumbers.every(num => !num.phone.trim())) {
             console.log('Early return: all customer numbers are empty');
             return;
@@ -227,5 +278,7 @@ export function useDialer({
         isTripleCallMode,
         setIsTripleCallMode,
         mapCustomerNumbersToLeads,
+        agentValidationError,
+        validateAgentNumber,
     }
 } 

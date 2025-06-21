@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { prefix } from '../utils/constants';
+import { prefix } from '@/lib/utils';
 
 const getFullKey = (key: string) => `${prefix}__${key}`;
 

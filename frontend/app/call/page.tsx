@@ -102,6 +102,8 @@ export default function CallingApp() {
     isTripleCallMode,
     setIsTripleCallMode,
     mapCustomerNumbersToLeads,
+    agentValidationError,
+    validateAgentNumber,
   } = useDialer({
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
     onActiveLeads: setActiveLeads,
@@ -164,6 +166,16 @@ export default function CallingApp() {
     agentNumber: string,
     leads: any[]
   ) => {
+    // Validate agent number before proceeding with triple call
+    const agentError = validateAgentNumber(agentNumber);
+    if (agentError) {
+      console.log(
+        "Triple call cancelled: agent number validation failed:",
+        agentError
+      );
+      return;
+    }
+
     connectSocket();
     await handleTripleCall(agentNumber, leads);
     setTimeout(disconnectSocket, 60000);
@@ -218,6 +230,7 @@ export default function CallingApp() {
               isTripleCallMode={isTripleCallMode}
               setIsTripleCallMode={setIsTripleCallMode}
               handleCustomerNumberChange={handleCustomerNumberChange}
+              agentValidationError={agentValidationError}
             />
           </div>
           <div className="lg:w-2/3 space-y-6">
