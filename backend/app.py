@@ -2,9 +2,6 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from routes.twilio_routes import twilio_bp
-from routes.leads_routes import leads_bp
-from routes.base_routes import base_bp
 import os
 
 load_dotenv()
@@ -18,6 +15,14 @@ CORS(app, origins="*")
 #     "http://localhost:3000",
 #     "https://the-actual-domain.com"
 # ])
+
+# Import routes after creating socketio instance to avoid circular imports
+from routes.twilio_routes import create_twilio_bp
+from routes.leads_routes import leads_bp
+from routes.base_routes import base_bp
+
+# Create twilio blueprint with socketio instance
+twilio_bp = create_twilio_bp(socketio)
 
 app.register_blueprint(base_bp)
 app.register_blueprint(twilio_bp)
