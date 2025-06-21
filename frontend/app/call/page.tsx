@@ -172,10 +172,16 @@ export default function CallingApp() {
   // Memoize the search handler to prevent recreating on every render
   const handleSearch = useCallback(
     async (searchQuery: string, resetPage?: boolean) => {
-      const targetPage = resetPage ? 1 : currentPage;
-      await loadCallHistory(targetPage, 20, searchQuery);
+      if (resetPage && currentPage !== 1) {
+        // Reset to page 1 and load data
+        handlePageChange(1);
+        await loadCallHistory(1, 20, searchQuery);
+      } else {
+        // Use current page
+        await loadCallHistory(currentPage, 20, searchQuery);
+      }
     },
-    [loadCallHistory, currentPage]
+    [loadCallHistory, currentPage, handlePageChange]
   );
 
   return (

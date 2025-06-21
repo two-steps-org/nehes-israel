@@ -226,8 +226,8 @@ const translations: Translations = {
 
   // active leads
   "activeLeads.title": {
-    en: "Active Leads",
-    he: "לידים פעילים",
+    en: "Active Call",
+    he: "שיחה פעילה",
   },
   "activeLeads.description": {
     en: "Currently calling these leads",

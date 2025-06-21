@@ -8,9 +8,12 @@ export function useCallHistory() {
     const [isLeadsLoading, setIsLeadsLoading] = useState(true)
     const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE)
     const [pageSize] = useState(PAGE_SIZE)
+    const [currentSearchQuery, setCurrentSearchQuery] = useState("")
 
     const loadCallHistory = useCallback(async (page: number, size: number, search: string = "") => {
         setIsLeadsLoading(true)
+        // Update the current search query when loading
+        setCurrentSearchQuery(search)
         try {
             const history = await fetchActiveLeads(page, size, search)
             setCallHistory(history)
@@ -24,8 +27,8 @@ export function useCallHistory() {
     }, [pageSize])
 
     useEffect(() => {
-        loadCallHistory(currentPage, pageSize)
-    }, [currentPage, loadCallHistory, pageSize])
+        loadCallHistory(currentPage, pageSize, currentSearchQuery)
+    }, [currentPage, loadCallHistory, pageSize, currentSearchQuery])
 
     const handlePageChange = useCallback((page: number) => {
         setCurrentPage(page)
@@ -47,5 +50,6 @@ export function useCallHistory() {
         reloadHistory,
         setCallHistory,
         loadCallHistory,
+        currentSearchQuery,
     }
 } 
