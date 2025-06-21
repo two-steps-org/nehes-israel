@@ -32,6 +32,7 @@ interface DialerCardProps {
   isTripleCallInProgress: boolean;
   isTripleCallMode: boolean;
   setIsTripleCallMode: (v: boolean) => void;
+  handleCustomerNumberChange?: (idx: number, value: string) => void;
 }
 
 export function DialerCard(props: DialerCardProps) {
@@ -50,6 +51,7 @@ export function DialerCard(props: DialerCardProps) {
     isTripleCallInProgress,
     isTripleCallMode,
     setIsTripleCallMode,
+    handleCustomerNumberChange,
   } = props;
   const { t, dir } = useLanguage();
   const phoneIconClass = dir === "rtl" ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4";
@@ -151,12 +153,16 @@ export function DialerCard(props: DialerCardProps) {
                     value={customerNumber.phone}
                     maxLength={10}
                     onChange={(e) => {
-                      const newNumbers = [...customerNumbers];
-                      newNumbers[idx] = {
-                        ...newNumbers[idx],
-                        phone: e.target.value,
-                      };
-                      setCustomerNumbers(newNumbers);
+                      if (handleCustomerNumberChange) {
+                        handleCustomerNumberChange(idx, e.target.value);
+                      } else {
+                        const newNumbers = [...customerNumbers];
+                        newNumbers[idx] = {
+                          ...newNumbers[idx],
+                          phone: e.target.value,
+                        };
+                        setCustomerNumbers(newNumbers);
+                      }
                     }}
                     onFocus={() => setFocusedInput({ type: "customer", idx })}
                     className="border-input dark:border-[#D29D0E]/50 dark:bg-[#122347]/80 dark:text-white focus-visible:ring-[#D29D0E]"

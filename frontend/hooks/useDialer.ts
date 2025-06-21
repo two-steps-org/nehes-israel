@@ -10,7 +10,17 @@ type CustomerNumber = {
 
 type FocusedInput = "agent" | { type: "customer"; idx: number } | null
 
-export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?: (history: ActiveLeads) => void, onActiveLeads?: (leads: Lead[]) => void } = {}) {
+export function useDialer({
+    onHistoryUpdate,
+    onActiveLeads,
+    onPhoneNumberComplete,
+    onPhoneNumberDeleted
+}: {
+    onHistoryUpdate?: (history: ActiveLeads) => void;
+    onActiveLeads?: (leads: Lead[]) => void;
+    onPhoneNumberComplete?: (phoneNumber: string) => void;
+    onPhoneNumberDeleted?: (position: number, previousPhoneNumber: string) => void;
+} = {}) {
     const [agentNumber, setAgentNumber] = useState<string>("")
     const [customerNumbers, setCustomerNumbers] = useState<CustomerNumber[]>([
         { id: 1, phone: "" },
@@ -82,19 +92,33 @@ export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?
             const { idx } = focusedInput
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone + value }
+                const newPhoneNumber = newNumbers[idx].phone + value
+                newNumbers[idx] = { ...newNumbers[idx], phone: newPhoneNumber }
+
+                // Check if phone number is now 10 digits
+                if (newPhoneNumber.length === 10 && onPhoneNumberComplete) {
+                    onPhoneNumberComplete(newPhoneNumber)
+                }
+
                 return newNumbers
             })
         } else {
             const idx = customerNumbers.findIndex(num => num.phone === "") >= 0 ? customerNumbers.findIndex(num => num.phone === "") : 0
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone + value }
+                const newPhoneNumber = newNumbers[idx].phone + value
+                newNumbers[idx] = { ...newNumbers[idx], phone: newPhoneNumber }
+
+                // Check if phone number is now 10 digits
+                if (newPhoneNumber.length === 10 && onPhoneNumberComplete) {
+                    onPhoneNumberComplete(newPhoneNumber)
+                }
+
                 return newNumbers
             })
             setFocusedInput({ type: "customer", idx })
         }
-    }, [focusedInput, customerNumbers])
+    }, [focusedInput, customerNumbers, onPhoneNumberComplete])
 
     const handleKeypadBackspace = useCallback(() => {
         if (focusedInput === "agent") {
@@ -103,7 +127,15 @@ export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?
             const { idx } = focusedInput
             setCustomerNumbers((prev) => {
                 const newNumbers = [...prev]
-                newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone.slice(0, -1) }
+                const previousValue = newNumbers[idx].phone
+                const newValue = previousValue.slice(0, -1)
+                newNumbers[idx] = { ...newNumbers[idx], phone: newValue }
+
+                // Check if phone number was reduced (backspace triggered deletion)
+                if (previousValue.length > 0 && newValue.length < previousValue.length && onPhoneNumberDeleted) {
+                    onPhoneNumberDeleted(idx + 1, previousValue) // Position is 1-based
+                }
+
                 return newNumbers
             })
         } else {
@@ -111,13 +143,21 @@ export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?
             if (idx >= 0) {
                 setCustomerNumbers((prev) => {
                     const newNumbers = [...prev]
-                    newNumbers[idx] = { ...newNumbers[idx], phone: newNumbers[idx].phone.slice(0, -1) }
+                    const previousValue = newNumbers[idx].phone
+                    const newValue = previousValue.slice(0, -1)
+                    newNumbers[idx] = { ...newNumbers[idx], phone: newValue }
+
+                    // Check if phone number was reduced (backspace triggered deletion)
+                    if (previousValue.length > 0 && newValue.length < previousValue.length && onPhoneNumberDeleted) {
+                        onPhoneNumberDeleted(idx + 1, previousValue) // Position is 1-based
+                    }
+
                     return newNumbers
                 })
                 setFocusedInput({ type: "customer", idx })
             }
         }
-    }, [focusedInput, customerNumbers])
+    }, [focusedInput, customerNumbers, onPhoneNumberDeleted])
 
     const handleFillCustomerNumber = useCallback((phoneNumber: string) => {
         setCustomerNumbers((prev) => {
@@ -130,10 +170,40 @@ export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?
                     updatedCodes[emptyIndex] = "+972"
                     return updatedCodes
                 })
+
+                // Check if phone number is 10 digits for lookup
+                if (phoneNumber.length === 10 && onPhoneNumberComplete) {
+                    onPhoneNumberComplete(phoneNumber)
+                }
             }
             return updatedNumbers
         })
-    }, [])
+    }, [onPhoneNumberComplete])
+
+    const getPositionForPhoneNumber = useCallback((phoneNumber: string): number | null => {
+        const index = customerNumbers.findIndex(num => num.phone === phoneNumber)
+        return index !== -1 ? index + 1 : null // Return 1-based position
+    }, [customerNumbers])
+
+    const handleCustomerNumberChange = useCallback((idx: number, newValue: string) => {
+        setCustomerNumbers((prev) => {
+            const updatedNumbers = [...prev]
+            const previousValue = updatedNumbers[idx].phone
+            updatedNumbers[idx] = { ...updatedNumbers[idx], phone: newValue }
+
+            // Check if phone number was reduced (any digit deleted)
+            if (previousValue.length > 0 && newValue.length < previousValue.length && onPhoneNumberDeleted) {
+                onPhoneNumberDeleted(idx + 1, previousValue) // Position is 1-based
+            }
+
+            // Check if phone number is now 10 digits
+            if (newValue.length === 10 && onPhoneNumberComplete) {
+                onPhoneNumberComplete(newValue)
+            }
+
+            return updatedNumbers
+        })
+    }, [onPhoneNumberComplete, onPhoneNumberDeleted])
 
     return {
         agentNumber,
@@ -152,6 +222,8 @@ export function useDialer({ onHistoryUpdate, onActiveLeads }: { onHistoryUpdate?
         handleKeypadInput,
         handleKeypadBackspace,
         handleFillCustomerNumber,
+        handleCustomerNumberChange,
+        getPositionForPhoneNumber,
         isTripleCallMode,
         setIsTripleCallMode,
         mapCustomerNumbersToLeads,

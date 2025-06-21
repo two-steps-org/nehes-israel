@@ -10,6 +10,7 @@ import { DEBOUND_DELAY } from "@/lib/utils";
 import { useLanguage } from "./language-provider";
 import { SearchInput } from "./SearchInput";
 import { LeadCard } from "./LeadCard";
+import { SelectedLead } from "@/hooks/useSelectedLeads";
 
 interface CallHistoryCardProps {
   leads: Lead[];
@@ -20,6 +21,11 @@ interface CallHistoryCardProps {
   total: number;
   onPageChange: (page: number) => void;
   onSearch: (searchQuery: string, resetPage?: boolean) => void;
+  selectedLeads?: SelectedLead[];
+  onSelectLead?: (lead: Lead) => void;
+  onRemoveSelectedLead?: (phoneNumber: string) => void;
+  canAddMoreLeads?: boolean;
+  getPositionForPhoneNumber?: (phoneNumber: string) => number | null;
 }
 
 export function LeadsTable(props: CallHistoryCardProps) {
@@ -32,6 +38,11 @@ export function LeadsTable(props: CallHistoryCardProps) {
     total,
     onPageChange,
     onSearch,
+    selectedLeads = [],
+    onSelectLead,
+    onRemoveSelectedLead,
+    canAddMoreLeads = true,
+    getPositionForPhoneNumber,
   } = props;
   const { t } = useLanguage();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
@@ -51,6 +62,23 @@ export function LeadsTable(props: CallHistoryCardProps) {
   const handleClearSearch = () => {
     clearSearch();
     // Keep hasSearched true so that clearing also triggers a search (to show all results)
+  };
+
+  const handleLeadClick = (phoneNumber: string) => {
+    const lead = leads.find((l) => l.phone_number === phoneNumber);
+    if (lead && onSelectLead && canAddMoreLeads) {
+      // Add to selected leads (pinned) only if we can add more
+      onSelectLead(lead);
+      // Also fill the customer number input
+      handleFillCustomerNumber(phoneNumber);
+    } else {
+      // If can't add more leads or no onSelectLead, just fill the number
+      handleFillCustomerNumber(phoneNumber);
+    }
+  };
+
+  const isLeadSelected = (phoneNumber: string) => {
+    return selectedLeads.some((lead) => lead.phone_number === phoneNumber);
   };
 
   return (
@@ -106,21 +134,58 @@ export function LeadsTable(props: CallHistoryCardProps) {
               ) : leads.length === 0 ? (
                 <div className="flex justify-center items-center h-40">
                   <p className="text-muted-foreground dark:text-gray-300">
-                    No leads found
+                    {t("table.no_leads_found")}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {leads.map((lead, index) => (
+                  {/* Render pinned leads first */}
+                  {selectedLeads.map((lead, index) => (
                     <LeadCard
-                      key={`${lead._id ?? lead.timestamp}-${
+                      key={`selected-${lead._id ?? lead.timestamp}-${
                         lead.phone_number
                       }-${index}`}
                       lead={lead}
                       index={index}
-                      onLeadClick={handleFillCustomerNumber}
+                      onLeadClick={handleLeadClick}
+                      isSelected={true}
+                      onRemoveSelected={onRemoveSelectedLead}
                     />
                   ))}
+
+                  {/* Add separator if there are pinned leads */}
+                  {selectedLeads.length > 0 && leads.length > 0 && (
+                    <div className="border-t border-gray-200 dark:border-[#D29D0E]/30 my-4"></div>
+                  )}
+
+                  {/* Show max leads message if reached limit */}
+                  {!canAddMoreLeads && (
+                    <div className="text-center py-2 px-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-md">
+                      <p className="text-sm text-orange-600 dark:text-orange-400">
+                        {t("selected.max_reached")} (3/3)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Render regular leads */}
+                  {leads.map((lead, index) => {
+                    // Skip rendering if this lead is already selected/pinned
+                    if (isLeadSelected(lead.phone_number)) {
+                      return null;
+                    }
+
+                    return (
+                      <LeadCard
+                        key={`${lead._id ?? lead.timestamp}-${
+                          lead.phone_number
+                        }-${index}`}
+                        lead={lead}
+                        index={index}
+                        onLeadClick={handleLeadClick}
+                        isSelected={false}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
