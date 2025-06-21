@@ -59,10 +59,32 @@ export async function fetchActiveLeads(page: number = 1, pageSize: number = 20, 
   return await response.json() as ActiveLeads;
 }
 
+export async function findLeadByPhone(phoneNumber: string): Promise<FindLeadResult> {
+  const response = await fetch(`${BACKEND_URL}/api/find-lead-by-phone`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true" },
+    body: JSON.stringify({
+      phone_number: phoneNumber
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} - ${await response.text()}`);
+  }
+  return await response.json() as FindLeadResult;
+}
+
 export interface TripleCallResult {
   success: boolean;
   message: string;
   leads: Lead[];
+}
+
+export interface FindLeadResult {
+  found: boolean;
+  lead?: Lead;
+  page?: number;
+  phone_number?: string;
+  message?: string;
 }
 
 export type CallRecord = {
@@ -76,9 +98,4 @@ export type CallRecord = {
   status: string
   duration: number
   isCalled?: string
-}
-export interface TripleCallResult {
-  success: boolean
-  message: string
-  leads: Lead[]
 }

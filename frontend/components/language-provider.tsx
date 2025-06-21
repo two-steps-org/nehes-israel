@@ -136,6 +136,28 @@ const translations: Translations = {
     he: "לא נמצאו לידים",
   },
 
+  // selected leads
+  "selected.pinned": {
+    en: "Pinned Lead",
+    he: "ליד נבחר",
+  },
+  "selected.not_found": {
+    en: "Lead not found in system",
+    he: "ליד לא נמצא במערכת",
+  },
+  "selected.found_and_pinned": {
+    en: "Lead found and pinned",
+    he: "ליד נמצא ונבחר",
+  },
+  "selected.remove": {
+    en: "Remove from pinned",
+    he: "הסר מהלידים הנבחרים",
+  },
+  "selected.max_reached": {
+    en: "Maximum pinned leads reached",
+    he: "הגעת למקסימום לידים נבחרים",
+  },
+
   // status
   "status.connected": {
     en: "Connected",
