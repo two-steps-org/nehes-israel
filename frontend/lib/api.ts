@@ -8,7 +8,7 @@ const BACKEND_URL = process.env.NODE_ENV === 'development' ? dev : prod;
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
   const response = await fetch(`${BACKEND_URL}/api/twilio/trigger_target_call`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true" },
     body: JSON.stringify({
       agent: agentNumber,
       numbers: [customerNumbers]
@@ -33,7 +33,7 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
   // Trigger the call
   const callResponse = await fetch(`${BACKEND_URL}/api/twilio/trigger_target_call`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true" },
     body: JSON.stringify({
       agent: formattedAgentNumber,
       numbers: formattedLeads,
@@ -52,7 +52,10 @@ export async function tripleCallLeads(agentNumber: string, leads: Lead[]): Promi
 }
 
 export async function fetchActiveLeads(page: number = 1, pageSize: number = 20): Promise<ActiveLeads> {
-  const response = await fetch(`${BACKEND_URL}/api/mongo-data?page=${page}&pageSize=${pageSize}`);
+  const response = await fetch(`${BACKEND_URL}/api/mongo-data?page=${page}&pageSize=${pageSize}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', "ngrok-skip-browser-warning": "true" },
+  });
   if (!response.ok) {
     throw new Error(`API error: ${response.status} - ${await response.text()}`);
   }
