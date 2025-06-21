@@ -11,7 +11,12 @@ export function useActiveLeadsSocket({ socketRef, setActiveLeads }: ActiveLeadsS
     // Helper to connect socket and set up listener
     const connectSocket = () => {
         if (!socketRef.current) {
-            socketRef.current = io(BACKEND_URL);
+            socketRef.current = io(BACKEND_URL, {
+                extraHeaders: {
+                    "ngrok-skip-browser-warning": "true",
+                    "Content-Type": "application/json"
+                }
+            });
             socketRef.current?.on("call_status_update", (data) => {
                 // @ts-ignore
                 setActiveLeads((prevLeads) => {
