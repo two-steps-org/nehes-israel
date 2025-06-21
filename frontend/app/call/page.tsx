@@ -11,11 +11,11 @@ import { StatusAlert } from "@/components/StatusAlert";
 import { LeadsTable } from "@/components/LeadsTable";
 import { ActiveLeads } from "@/types/activeLeads.type";
 import { io, Socket } from "socket.io-client";
-import React, { useMemo, useCallback, useEffect, useRef } from "react";
+import React, { useMemo, useCallback, useRef } from "react";
 import { useActiveLeadsSocket } from "@/hooks/useActiveLeadsSocket";
 
 export default function CallingApp() {
-  const { t, dir } = useLanguage();
+  const { dir } = useLanguage();
 
   // Call history hook with pagination
   const {
@@ -142,20 +142,18 @@ export default function CallingApp() {
           </div>
           <div className="lg:w-2/3 space-y-6">
             {/* status alert */}
-            <StatusAlert tripleCallStatus={tripleCallStatus} t={t} />
+            <StatusAlert tripleCallStatus={tripleCallStatus} />
 
             {/* active call leads card*/}
             <ActiveLeadsCard
               activeLeads={activeLeads}
               iconMarginClass={iconMarginClass}
-              t={t}
             />
 
             {/* leads table with pagination */}
             <LeadsTable
               leads={leads}
               isLeadsLoading={isLeadsLoading}
-              t={t}
               handleFillCustomerNumber={handleFillCustomerNumber}
               currentPage={currentPage}
               totalPages={totalPages}

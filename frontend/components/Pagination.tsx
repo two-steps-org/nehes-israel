@@ -8,6 +8,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { useLanguage } from "./language-provider";
 
 export interface PaginationProps {
   currentPage: number;
@@ -22,6 +23,8 @@ export function Pagination({
   total,
   onPageChange,
 }: PaginationProps) {
+  const { isHebrew, t } = useLanguage();
+
   // Generate pagination items - same logic as before
   const generatePaginationItems = () => {
     const items = [];
@@ -129,7 +132,8 @@ export function Pagination({
 
       {/* Page info */}
       <div className="text-center mt-2 text-sm text-muted-foreground dark:text-gray-400">
-        Page {currentPage} of {totalPages} ({total} total items)
+        {t("pagination.page")} {currentPage} {t("pagination.of")} {totalPages}{" "}
+        {t("pagination.total")} {total}
       </div>
     </div>
   );
