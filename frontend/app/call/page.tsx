@@ -10,8 +10,8 @@ import { ActiveLeadsCard } from "@/components/ActiveLeadsCard";
 import { StatusAlert } from "@/components/StatusAlert";
 import { LeadsTable } from "@/components/LeadsTable";
 import { ActiveLeads } from "@/types/activeLeads.type";
-import React, { useMemo, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import React, { useMemo, useCallback, useEffect, useRef } from "react";
 
 export default function CallingApp() {
   const { t, dir } = useLanguage();
@@ -25,6 +25,7 @@ export default function CallingApp() {
     totalPages,
     total,
     handlePageChange,
+    loadCallHistory,
   } = useCallHistory();
 
   // Triple call hook
@@ -119,6 +120,15 @@ export default function CallingApp() {
     setTimeout(disconnectSocket, 60000);
   };
 
+  // Memoize the search handler to prevent recreating on every render
+  const handleSearch = useCallback(
+    async (searchQuery: string, resetPage?: boolean) => {
+      const targetPage = resetPage ? 1 : currentPage;
+      await loadCallHistory(targetPage, 20, searchQuery);
+    },
+    [loadCallHistory, currentPage]
+  );
+
   return (
     <div
       className="flex flex-col min-h-screen bg-background dark:bg-[#122347]"
@@ -175,6 +185,7 @@ export default function CallingApp() {
               totalPages={totalPages}
               total={total}
               onPageChange={handlePageChange}
+              onSearch={handleSearch}
             />
           </div>
         </div>

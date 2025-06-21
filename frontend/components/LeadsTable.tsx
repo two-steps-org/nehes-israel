@@ -1,22 +1,13 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Lead } from "@/types/activeLeads.type";
-import React, { useEffect } from "react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { FilterIcon, Search, X } from "lucide-react";
+import { Pagination } from "./Pagination";
+import { useLeadsSearch } from "@/hooks/useLeadsSearch";
+import { DEBOUND_DELAY } from "@/lib/utils";
 
 interface CallHistoryCardProps {
   leads: Lead[];
@@ -27,6 +18,7 @@ interface CallHistoryCardProps {
   totalPages: number;
   total: number;
   onPageChange: (page: number) => void;
+  onSearch: (searchQuery: string, resetPage?: boolean) => void;
 }
 
 export function LeadsTable({
@@ -38,82 +30,25 @@ export function LeadsTable({
   totalPages,
   total,
   onPageChange,
+  onSearch,
 }: CallHistoryCardProps) {
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+  // Use the comprehensive search hook that handles all debouncing logic
+  const { searchQuery, setSearchQuery, clearSearch, isSearching } =
+    useLeadsSearch({
+      onSearch,
+      currentPage,
+      debounceDelay: DEBOUND_DELAY,
+    });
+
   useEffect(() => {
     console.log(leads);
   }, [leads]);
 
-  // Generate pagination items
-  const generatePaginationItems = () => {
-    const items = [];
-    const maxVisiblePages = 5;
-    const halfVisible = Math.floor(maxVisiblePages / 2);
-
-    let startPage = Math.max(1, currentPage - halfVisible);
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    // Adjust start if we're near the end
-    if (endPage - startPage < maxVisiblePages - 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // Add ellipsis and first page if needed
-    if (startPage > 1) {
-      items.push(
-        <PaginationItem key="1">
-          <PaginationLink
-            onClick={() => onPageChange(1)}
-            isActive={currentPage === 1}
-          >
-            1
-          </PaginationLink>
-        </PaginationItem>
-      );
-      if (startPage > 2) {
-        items.push(
-          <PaginationItem key="start-ellipsis">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-    }
-
-    // Add visible page numbers
-    for (let page = startPage; page <= endPage; page++) {
-      items.push(
-        <PaginationItem key={page}>
-          <PaginationLink
-            onClick={() => onPageChange(page)}
-            isActive={currentPage === page}
-          >
-            {page}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    // Add ellipsis and last page if needed
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        items.push(
-          <PaginationItem key="end-ellipsis">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-      items.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => onPageChange(totalPages)}
-            isActive={currentPage === totalPages}
-          >
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-
-    return items;
+  const handleClearSearch = () => {
+    clearSearch();
+    // Keep hasSearched true so that clearing also triggers a search (to show all results)
   };
 
   return (
@@ -121,8 +56,50 @@ export function LeadsTable({
       {/* header */}
       <CardHeader className="pb-3 flex-shrink-0">
         <CardTitle className="text-xl font-bold text-foreground dark:text-white">
-          {t("history.title")} ({total} {t("history.subtitle")})
+          <div className="flex items-center gap-2">
+            <span>
+              {t("history.title")} ({total} {t("history.subtitle")})
+            </span>
+            <Button
+              variant="outline"
+              className="px-2 py-0"
+              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            >
+              <FilterIcon className="w-3 h-3" />
+            </Button>
+          </div>
         </CardTitle>
+
+        {/* Search input - shown/hidden based on filters state */}
+        {isFiltersOpen && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder={
+                t("table.search.placeholder") || "Search by name or phone..."
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10"
+            />
+            {isSearching && (
+              <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#122347] dark:border-[#D29D0E]" />
+              </div>
+            )}
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearSearch}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </CardHeader>
 
       {/* leads list - with proper height calculation */}
@@ -202,42 +179,12 @@ export function LeadsTable({
         </Tabs>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-4 flex-shrink-0">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                    className={
-                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
-                    }
-                  />
-                </PaginationItem>
-
-                {generatePaginationItems()}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() =>
-                      onPageChange(Math.min(totalPages, currentPage + 1))
-                    }
-                    className={
-                      currentPage === totalPages
-                        ? "pointer-events-none opacity-50"
-                        : ""
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-
-            {/* Page info */}
-            <div className="text-center mt-2 text-sm text-muted-foreground dark:text-gray-400">
-              Page {currentPage} of {totalPages} ({total} total items)
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          total={total}
+          onPageChange={onPageChange}
+        />
       </CardContent>
     </Card>
   );

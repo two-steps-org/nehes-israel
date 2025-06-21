@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from routes.twilio_routes import twilio_bp
-from routes.mongo_routes import mongo_bp
+from routes.leads_routes import leads_bp
 from routes.base_routes import base_bp
 import os
 
@@ -17,11 +17,11 @@ CORS(app, origins="*")
 # CORS(app, origins=[
 #     "http://localhost:3000",
 #     "https://the-actual-domain.com"
-# ]) 
+# ])
 
 app.register_blueprint(base_bp)
 app.register_blueprint(twilio_bp)
-app.register_blueprint(mongo_bp)
+app.register_blueprint(leads_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
