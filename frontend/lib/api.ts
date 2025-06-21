@@ -1,9 +1,5 @@
 import { ActiveLeads, Lead } from "@/types/activeLeads.type";
-
-const dev = process.env.NEXT_PUBLIC_DEV_URL;
-const prod = process.env.NEXT_PUBLIC_SERVER_URL;
-
-const BACKEND_URL = process.env.NODE_ENV === 'development' ? dev : prod;
+import { BACKEND_URL } from "./utils";
 
 export async function bridgeCall(agentNumber: string, customerNumbers: string): Promise<void> {
   const response = await fetch(`${BACKEND_URL}/api/twilio/trigger_target_call`, {

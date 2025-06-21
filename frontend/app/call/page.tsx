@@ -12,6 +12,7 @@ import { LeadsTable } from "@/components/LeadsTable";
 import { ActiveLeads } from "@/types/activeLeads.type";
 import { io, Socket } from "socket.io-client";
 import React, { useMemo, useCallback, useEffect, useRef } from "react";
+import { useActiveLeadsSocket } from "@/hooks/useActiveLeadsSocket";
 
 export default function CallingApp() {
   const { t, dir } = useLanguage();
@@ -71,40 +72,12 @@ export default function CallingApp() {
     [dir]
   );
   const flexDirection = dir === "rtl" ? "flex-row-reverse" : "flex-row";
-
   const socketRef = useRef<Socket | null>(null);
 
-  // Helper to connect socket and set up listener
-  const connectSocket = () => {
-    if (!socketRef.current) {
-      socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5001");
-      socketRef.current.on("call_status_update", (data) => {
-        setActiveLeads((prevLeads) => {
-          const normalize = (num: string = "") => {
-            const digits = num.replace(/\D/g, "");
-            return digits.slice(-9);
-          };
-          const toNorm = normalize(data.to);
-          const fromNorm = normalize(data.from);
-          return prevLeads.map((lead) => {
-            const leadNorm = normalize(lead.phone_number);
-            if (leadNorm === toNorm || leadNorm === fromNorm) {
-              return { ...lead, status: data.status };
-            }
-            return lead;
-          });
-        });
-      });
-    }
-  };
-
-  // Helper to disconnect socket
-  const disconnectSocket = () => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-  };
+  const { connectSocket, disconnectSocket } = useActiveLeadsSocket({
+    socketRef,
+    setActiveLeads,
+  });
 
   // Wrap handleCall to connect socket before calling
   const handleCallWithSocket = async () => {
@@ -114,7 +87,10 @@ export default function CallingApp() {
   };
 
   // Wrap handleTripleCall to connect socket before calling
-  const handleTripleCallWithSocket = async (agentNumber: string, leads: any[]) => {
+  const handleTripleCallWithSocket = async (
+    agentNumber: string,
+    leads: any[]
+  ) => {
     connectSocket();
     await handleTripleCall(agentNumber, leads);
     setTimeout(disconnectSocket, 60000);
