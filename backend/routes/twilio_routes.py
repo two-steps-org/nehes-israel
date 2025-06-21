@@ -3,6 +3,7 @@ from twilio.twiml.voice_response import VoiceResponse, Dial, Number
 from twilio.rest import Client
 from utils.utils import update_sheet_status
 import os
+from flask_socketio import SocketIO
 
 ACCOUNT_SID = os.getenv('ACCOUNT_SID')
 AUTH_TOKEN = os.getenv('AUTH_TOKEN')
@@ -88,7 +89,10 @@ def trigger_target_call():
             to=agent_number,
             from_=TWILIO_NUMBER,
             url=twiml_url,
-            method="POST"
+            method="POST",
+            status_callback=request.url_root.rstrip("/") + f"{BASE_URL}/twilio_callback",
+            status_callback_event=["initiated", "ringing", "answered", "completed"],
+            status_callback_method="POST"
         )
         print(f"DEBUG: Call created with SID: {call.sid}")
         
@@ -126,7 +130,15 @@ def twilio_callback():
     to_number = form.get("To")
     duration = form.get("CallDuration")
     print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
-    # update_sheet_status(call_sid, call_status, duration, from_number, to_number)
+    update_sheet_status(call_sid, call_status, duration, from_number, to_number)
+    from app import socketio
+    socketio.emit('call_status_update', {
+        'call_sid': call_sid,
+        'status': call_status,
+        'from': from_number,
+        'to': to_number,
+        'duration': duration
+    })
     return ("", 204) 
 
 

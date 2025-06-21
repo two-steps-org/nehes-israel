@@ -83,6 +83,10 @@ Export flask server to cloudflared proxy API getway:
 
 ```bash
 cloudflared tunnel --url http://localhost:5000
+or
+zrok share public 8080
+or
+ngrok http http://127.0.0.1:5000
 ```
 
 ## ⚠️ Notes
