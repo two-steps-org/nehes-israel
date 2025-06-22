@@ -37,16 +37,16 @@ def create_twilio_bp(socketio):
         elif request.args.get("numbers"):
             numbers = request.args.get("numbers").split(",")
             print(f"DEBUG: Got numbers from args: {numbers}")
-        
+
         # Additional check: try to get from request.values (combines args and form)
         if not numbers and request.values.get("numbers"):
             numbers = request.values.get("numbers").split(",")
             print(f"DEBUG: Got numbers from values: {numbers}")
-        
+
         print(f"DEBUG: Final numbers: {numbers}")
         print(f"DEBUG: Numbers type: {type(numbers)}")
         print(f"DEBUG: Numbers length: {len(numbers) if numbers else 0}")
-        
+
         if not numbers:
             print("ERROR: No numbers provided!")
             return Response("<Response><Say>No numbers provided</Say></Response>", mimetype="text/xml")
@@ -68,7 +68,7 @@ def create_twilio_bp(socketio):
             )
             dial.append(num)
             print(f"DEBUG: Added number {n} to dial")
-        
+
         vr.append(dial)
         twiml_str = str(vr)
         print(f"DEBUG: Generated TwiML: {twiml_str}")
@@ -262,3 +262,4 @@ def create_twilio_bp(socketio):
 #         status_callback_method="POST"
 #     )
 #     return jsonify({"call_sid": call.sid})
+
