@@ -158,30 +158,39 @@ def create_twilio_bp(socketio):
 
     @twilio_bp.route(f"{BASE_URL}/twilio_callback",  methods=['GET', 'POST'])
     def twilio_callback():
-        if request.method == "POST":
-            form = request.form
-            print("[Twilio Callback] POST data:", dict(form))
-        else:
-            form = request.args
-            print("[Twilio Callback] GET data:", dict(form))
+        try:
+            if request.method == "POST":
+                form = request.form
+                print("[Twilio Callback] POST data:", dict(form))
+            else:
+                form = request.args
+                print("[Twilio Callback] GET data:", dict(form))
 
-        call_sid = form.get("CallSid")
-        call_status = form.get("CallStatus")
-        from_number = form.get("From")
-        to_number = form.get("To")
-        duration = form.get("CallDuration")
-        print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
-        # update_sheet_status(call_sid, call_status, duration, from_number, to_number)
+            call_sid = form.get("CallSid")
+            call_status = form.get("CallStatus")
+            from_number = form.get("From")
+            to_number = form.get("To")
+            duration = form.get("CallDuration")
+            print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
+            # update_sheet_status(call_sid, call_status, duration, from_number, to_number)
 
-        socketio.emit('call_status_update', {
-            'call_sid': call_sid,
-            'status': call_status,
-            'from': from_number,
-            'to': to_number,
-            'duration': duration
-        })
-        return ("", 204)
+            socketio.emit('call_status_update', {
+                'call_sid': call_sid,
+                'status': call_status,
+                'from': from_number,
+                'to': to_number,
+                'duration': duration
+            })
+            print("=== DEBUG: Twilio callback completed with socketio emit ===")
 
+            return ("", 204)
+        except Exception as e:
+            print(f"ERROR: Exception occurred: {str(e)}")
+            print(f"ERROR: Exception type: {type(e)}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": f"Failed to handle Twilio callback: {str(e)}"}), 500
+    
     return twilio_bp
 
 
