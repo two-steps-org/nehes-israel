@@ -26,20 +26,8 @@ def create_twilio_bp(socketio):
         if request.is_json:
             print(f"DEBUG: Request JSON: {request.get_json(force=True)}")
 
-        print("=== DEBUG: Starting target_call ===")
-        print(f"DEBUG: Request method: {request.method}")
-        print(f"DEBUG: Request URL: {request.url}")
-        print(f"DEBUG: Request args: {dict(request.args)}")
-        print(f"DEBUG: Request form: {dict(request.form)}")
-        print(f"DEBUG: Request is_json: {request.is_json}")
-        if request.is_json:
-            print(f"DEBUG: Request JSON: {request.get_json(force=True)}")
-
         numbers = None
         if request.is_json:
-            json_data = request.get_json(force=True)
-            numbers = json_data.get("numbers")
-            print(f"DEBUG: Got numbers from JSON: {numbers}")
             json_data = request.get_json(force=True)
             numbers = json_data.get("numbers")
             print(f"DEBUG: Got numbers from JSON: {numbers}")
@@ -60,33 +48,14 @@ def create_twilio_bp(socketio):
         print(f"DEBUG: Numbers type: {type(numbers)}")
         print(f"DEBUG: Numbers length: {len(numbers) if numbers else 0}")
 
-        print(f"DEBUG: Got numbers from args: {numbers}")
-
-        # Additional check: try to get from request.values (combines args and form)
-        if not numbers and request.values.get("numbers"):
-            numbers = request.values.get("numbers").split(",")
-            print(f"DEBUG: Got numbers from values: {numbers}")
-
-        print(f"DEBUG: Final numbers: {numbers}")
-        print(f"DEBUG: Numbers type: {type(numbers)}")
-        print(f"DEBUG: Numbers length: {len(numbers) if numbers else 0}")
-
         if not numbers:
             print("ERROR: No numbers provided!")
-            print("ERROR: No numbers provided!")
             return Response("<Response><Say>No numbers provided</Say></Response>", mimetype="text/xml")
-        print("=== DEBUG: Starting target_call numbers are valid ===")
-
         print("=== DEBUG: Starting target_call numbers are valid ===")
 
         vr = VoiceResponse()
         dial = Dial()
         callback_url = request.url_root.rstrip("/") + f"{BASE_URL}/twilio_callback"
-        print(f"DEBUG: Callback URL: {callback_url}")
-
-        print("=== DEBUG: Starting target_call starting call numbers ===")
-        for i, n in enumerate(numbers):
-            print(f"DEBUG: Processing number {i+1}: '{n}' (type: {type(n)})")
         print(f"DEBUG: Callback URL: {callback_url}")
 
         print("=== DEBUG: Starting target_call starting call numbers ===")
@@ -101,13 +70,7 @@ def create_twilio_bp(socketio):
             dial.append(num)
             print(f"DEBUG: Added number {n} to dial")
 
-            print(f"DEBUG: Added number {n} to dial")
-
         vr.append(dial)
-        twiml_str = str(vr)
-        print(f"DEBUG: Generated TwiML: {twiml_str}")
-        print("Returning TwiML:", twiml_str)
-        return Response(twiml_str, mimetype="text/xml")
         twiml_str = str(vr)
         print(f"DEBUG: Generated TwiML: {twiml_str}")
         print("Returning TwiML:", twiml_str)
@@ -117,70 +80,44 @@ def create_twilio_bp(socketio):
     def trigger_target_call():
         try:
             print("=== DEBUG: Starting trigger_target_call ===")
-
-
             # Validate Twilio credentials firstAdd commentMore actions
             if not ACCOUNT_SID or len(ACCOUNT_SID) != 34 or not ACCOUNT_SID.startswith('AC'):
                 print(f"ERROR: Invalid ACCOUNT_SID: {ACCOUNT_SID} (length: {len(ACCOUNT_SID) if ACCOUNT_SID else 0})")
                 return jsonify({"error": "Invalid Twilio Account SID"}), 500
 
-
             if not API_KEY_SID or not API_KEY_SECRET:
                 print("ERROR: Missing API Key credentials")
                 return jsonify({"error": "Missing Twilio API Key credentials"}), 500
-
 
             # Check if request has JSON
             if not request.is_json:
                 print("ERROR: Request is not JSON")
                 return jsonify({"error": "Request must be JSON"}), 400
 
-
             data = request.get_json(force=True)
             print(f"DEBUG: Received data: {data}")
-
 
             agent_number = data.get("agent")
             numbers = data.get("numbers")
             print(f"DEBUG: agent_number={agent_number}, numbers={numbers}")
 
-
             if not agent_number or not numbers or not isinstance(numbers, list):
                 print("ERROR: Invalid parameters")
                 return jsonify({"error": "Please provide 'agent' and list of 'numbers'!"}), 400
-
 
             # Check Twilio credentials
             print(f"DEBUG: ACCOUNT_SID: {ACCOUNT_SID[:10]}...")
             print(f"DEBUG: API_KEY_SID: {API_KEY_SID}")
             print(f"DEBUG: TWILIO_NUMBER: {TWILIO_NUMBER}")
 
-
             num_string = ",".join(numbers)
             print(f"DEBUG: num_string: '{num_string}'")
             print(f"DEBUG: request.url_root: '{request.url_root}'")
-            # once
-            from urllib.parse import quote
-            encoded_numbers = quote(num_string)
-            print(f"DEBUG: encoded_numbers: '{encoded_numbers}'")
-            twiml_url = request.url_root.rstrip("/") + f"{BASE_URL}/target_call?numbers={encoded_numbers}"
-            print(f"DEBUG: num_string: '{num_string}'")
-            print(f"DEBUG: request.url_root: '{request.url_root}'")
-            # once
-            from urllib.parse import quote
-            encoded_numbers = quote(num_string)
-            print(f"DEBUG: encoded_numbers: '{encoded_numbers}'")
-            twiml_url = request.url_root.rstrip("/") + f"{BASE_URL}/target_call?numbers={encoded_numbers}"
+            twiml_url = request.url_root.rstrip("/") + f"{BASE_URL}/target_call?numbers={num_string}"
             print(f"DEBUG: twiml_url: {twiml_url}")
-            print(f"DEBUG: twiml_url length: {len(twiml_url)}")
-
-            print(f"DEBUG: twiml_url length: {len(twiml_url)}")
 
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
             print("DEBUG: Twilio client created successfully")
-
-
-            # what twiml_url is ?
 
             call = client.calls.create(
                 to=agent_number,
@@ -214,8 +151,6 @@ def create_twilio_bp(socketio):
 
             return jsonify({"error": f"Failed to trigger call: {str(e)}"}), 500
 
-
-
     @twilio_bp.route(f"{BASE_URL}/twilio_callback",  methods=['GET', 'POST'])
     def twilio_callback():
         try:
@@ -232,7 +167,6 @@ def create_twilio_bp(socketio):
             to_number = form.get("To")
             duration = form.get("CallDuration")
             print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
-            # update_sheet_status(call_sid, call_status, duration, from_number, to_number)
 
             socketio.emit('call_status_update', {
                 'call_sid': call_sid,
@@ -247,8 +181,6 @@ def create_twilio_bp(socketio):
         except Exception as e:
             print(f"ERROR: Exception occurred: {str(e)}")
             print(f"ERROR: Exception type: {type(e)}")
-            import traceback
-            traceback.print_exc()
             return jsonify({"error": f"Failed to handle Twilio callback: {str(e)}"}), 500
     
     return twilio_bp
