@@ -6,7 +6,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Clock } from "lucide-react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 interface ActiveLeadsCardProps {
   activeLeads: any[];
@@ -19,7 +19,27 @@ export function ActiveLeadsCard({
   iconMarginClass,
   t,
 }: ActiveLeadsCardProps) {
-  if (!activeLeads.length) return null;
+  const [hiddenLeadIds, setHiddenLeadIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    activeLeads.forEach((lead) => {
+      if (
+        (lead.status === "completed" || lead.status === "no-answer") &&
+        !hiddenLeadIds.includes(lead._id)
+      ) {
+        setTimeout(() => {
+          setHiddenLeadIds((prev) => [...prev, lead._id]);
+        }, 3000);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeLeads, hiddenLeadIds]);
+
+  const visibleLeads = activeLeads.filter(
+    (lead) => !hiddenLeadIds.includes(lead._id)
+  );
+
+  if (!visibleLeads.length) return null;
   return (
     <Card className="dark:border-[#D29D0E]/30 dark:bg-[#122347]/50">
       <CardHeader className="pb-3">
@@ -32,7 +52,7 @@ export function ActiveLeadsCard({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {activeLeads.map((lead) => (
+          {visibleLeads.map((lead) => (
             <div
               key={lead._id}
               className="p-3 border rounded-md dark:border-[#D29D0E]/30 bg-background dark:bg-[#122347]/80"

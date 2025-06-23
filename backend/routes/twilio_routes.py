@@ -1,7 +1,7 @@
 from flask import Blueprint, request, Response, jsonify
 from twilio.twiml.voice_response import VoiceResponse, Dial, Number
 from twilio.rest import Client
-from utils.utils import update_sheet_status
+#from utils.utils import update_sheet_status
 import os
 from flask_socketio import SocketIO
 
@@ -129,8 +129,8 @@ def twilio_callback():
     from_number = form.get("From")
     to_number = form.get("To")
     duration = form.get("CallDuration")
-    print(f"[Twilio Callback] SID: {call_sid} | Status: {call_status} | From: {from_number} | To: {to_number} | Duration: {duration}")
-    update_sheet_status(call_sid, call_status, duration, from_number, to_number)
+    print(f"[Twilio Callback] SID: {call_sid} | \nStatus: {call_status} | \nFrom: {from_number} | \nTo: {to_number} | \nDuration: {duration}")
+    #update_sheet_status(call_sid, call_status, duration, from_number, to_number)
     from app import socketio
     socketio.emit('call_status_update', {
         'call_sid': call_sid,
