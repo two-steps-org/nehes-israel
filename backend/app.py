@@ -19,7 +19,7 @@ socketio = SocketIO(
 )
 
 # CORS configuration
-CORS(app, origins="*", allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"])
+CORS(app, origins="*")
 
 # CORS(app, origins=[
 #     "http://localhost:3000",
