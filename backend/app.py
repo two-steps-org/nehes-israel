@@ -6,10 +6,20 @@ import os
 
 load_dotenv()
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
 
-# TODO: Change this in prod
-CORS(app, origins="*")
+# Enhanced SocketIO configuration for production
+socketio = SocketIO(
+    app, 
+    cors_allowed_origins="*",
+    logger=True,
+    engineio_logger=True,
+    async_mode='eventlet',  # or 'gevent'
+    ping_timeout=60,
+    ping_interval=25
+)
+
+# CORS configuration
+CORS(app, origins="*", allow_headers=["Content-Type"], methods=["GET", "POST", "OPTIONS"])
 
 # CORS(app, origins=[
 #     "http://localhost:3000",
@@ -30,4 +40,4 @@ app.register_blueprint(leads_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
