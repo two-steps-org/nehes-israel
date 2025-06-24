@@ -30,7 +30,7 @@ export function useActiveLeadsSocket({ socketRef, setActiveLeads }: ActiveLeadsS
                     return prevLeads.map((lead) => {
                         const leadNorm = normalize(lead.phone_number);
                         if (leadNorm === toNorm || leadNorm === fromNorm) {
-                            return { ...lead, status: data.status };
+                            return { ...lead, status: data.status, duration: data.duration };
                         }
                         return lead;
                     });
