@@ -93,6 +93,7 @@ def trigger_target_call():
             status_callback=request.url_root.rstrip("/") + f"{BASE_URL}/twilio_callback",
             status_callback_event=["initiated", "ringing", "answered", "completed"],
             status_callback_method="POST"
+            #recording_status_callback="https://yourapp.com/recording_callback"
         )
         print(f"DEBUG: Call created with SID: {call.sid}")
         
