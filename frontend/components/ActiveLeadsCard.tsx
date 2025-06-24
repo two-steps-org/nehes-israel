@@ -7,18 +7,19 @@ import {
 } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "./language-provider";
 
 interface ActiveLeadsCardProps {
   activeLeads: any[];
   iconMarginClass: string;
-  t: (key: string) => string;
 }
 
 export function ActiveLeadsCard({
   activeLeads,
   iconMarginClass,
-  t,
 }: ActiveLeadsCardProps) {
+  const { t } = useLanguage();
+  if (!activeLeads.length) return null;
   const [hiddenLeadIds, setHiddenLeadIds] = useState<string[]>([]);
   const [timers, setTimers] = useState<{ [key: string]: number }>({});
   const intervalRefs = React.useRef<{ [key: string]: any }>({});

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
 
 type Language = "en" | "he";
 
@@ -14,6 +14,7 @@ type Translations = {
 
 // Add all translations here
 const translations: Translations = {
+  // app
   "app.title": {
     en: "Calling App",
     he: "אפליקציית שיחות",
@@ -22,6 +23,8 @@ const translations: Translations = {
     en: "Bridge calls to your phone",
     he: "גשר שיחות לטלפון שלך",
   },
+
+  // dialer
   "dialer.title": {
     en: "Call Dialer",
     he: "חייגן שיחות",
@@ -30,14 +33,20 @@ const translations: Translations = {
     en: "Make calls to leads or enter numbers manually",
     he: "בצע שיחות ללידים או הזן מספרים באופן ידני",
   },
+
+  // agent
   "agent.number": {
     en: "Agent Phone Number",
     he: "מספר טלפון של הסוכן",
   },
+
+  // customer
   "customer.number": {
     en: "Customer Phone Number",
     he: "מספר טלפון של הלקוח",
   },
+
+  // buttons
   "button.bridge": {
     en: "Bridge Call",
     he: "גשר שיחה",
@@ -54,6 +63,12 @@ const translations: Translations = {
     en: "Calling Leads...",
     he: "מתקשר למובילים...",
   },
+  "button.viewHistory": {
+    en: "View Call History",
+    he: "צפה בהיסטוריית שיחות",
+  },
+
+  // history
   "history.title": {
     en: "Leads",
     he: "לידים",
@@ -70,6 +85,12 @@ const translations: Translations = {
     en: "All Calls",
     he: "כל השיחות",
   },
+  "history.viewFull": {
+    en: "View Full History",
+    he: "צפה בהיסטוריה מלאה",
+  },
+
+  // table
   "table.datetime": {
     en: "Date & Time",
     he: "תאריך ושעה",
@@ -102,6 +123,42 @@ const translations: Translations = {
     en: "Duration",
     he: "משך",
   },
+  "table.not_called": {
+    en: "Not Called",
+    he: "לא טופל",
+  },
+  "table.called": {
+    en: "Called",
+    he: "בוצעה שיחה",
+  },
+  "table.no_leads_found": {
+    en: "No leads found",
+    he: "לא נמצאו לידים",
+  },
+
+  // selected leads
+  "selected.pinned": {
+    en: "Pinned Lead",
+    he: "ליד נבחר",
+  },
+  "selected.not_found": {
+    en: "Lead not found in system",
+    he: "ליד לא נמצא במערכת",
+  },
+  "selected.found_and_pinned": {
+    en: "Lead found and pinned",
+    he: "ליד נמצא ונבחר",
+  },
+  "selected.remove": {
+    en: "Remove from pinned",
+    he: "הסר מהלידים הנבחרים",
+  },
+  "selected.max_reached": {
+    en: "Maximum pinned leads reached",
+    he: "הגעת למקסימום לידים נבחרים",
+  },
+
+  // status
   "status.connected": {
     en: "Connected",
     he: "מחובר",
@@ -142,10 +199,8 @@ const translations: Translations = {
     en: "Dropped",
     he: "נותק",
   },
-  "button.viewHistory": {
-    en: "View Call History",
-    he: "צפה בהיסטוריית שיחות",
-  },
+
+  // placeholder
   "placeholder.agent": {
     en: "Enter your phone number",
     he: "הזן את מספר הטלפון שלך",
@@ -154,6 +209,18 @@ const translations: Translations = {
     en: "Enter customer phone number",
     he: "הזן את מספר הטלפון של הלקוח",
   },
+
+  // validation
+  "validation.agent.required": {
+    en: "Agent phone number is required",
+    he: "מספר טלפון של הסוכן נדרש",
+  },
+  "validation.agent.min_digits": {
+    en: "Agent phone number must be at least 9 digits",
+    he: "מספר טלפון של הסוכן חייב להיות לפחות 9 ספרות",
+  },
+
+  // alert
   "alert.success": {
     en: "Success",
     he: "הצלחה",
@@ -166,9 +233,11 @@ const translations: Translations = {
     en: "or",
     he: "או",
   },
+
+  // active leads
   "activeLeads.title": {
-    en: "Active Leads",
-    he: "לידים פעילים",
+    en: "Active Call",
+    he: "שיחה פעילה",
   },
   "activeLeads.description": {
     en: "Currently calling these leads",
@@ -178,9 +247,27 @@ const translations: Translations = {
     en: "Call in progress",
     he: "שיחה מתבצעת",
   },
-  "history.viewFull": {
-    en: "View Full History",
-    he: "צפה בהיסטוריה מלאה",
+
+  // pagination
+  "pagination.page": {
+    en: "Page",
+    he: "דף",
+  },
+  "pagination.of": {
+    en: "of",
+    he: "מתוך",
+  },
+  "pagination.total": {
+    en: "total items",
+    he: "פריטים בסך הכל",
+  },
+  "pagination.previous": {
+    en: "Previous",
+    he: "הקודם",
+  },
+  "pagination.next": {
+    en: "Next",
+    he: "הבא",
   },
 };
 
@@ -189,6 +276,7 @@ type LanguageContextType = {
   setLanguage: (language: Language) => void;
   t: (key: string) => string;
   dir: string;
+  isHebrew: boolean;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -222,8 +310,12 @@ export function LanguageProvider({
     return translations[key][language];
   };
 
+  const isHebrew = useMemo(() => language === "he", [language]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, dir }}>
+    <LanguageContext.Provider
+      value={{ language, setLanguage, t, dir, isHebrew }}
+    >
       {children}
     </LanguageContext.Provider>
   );

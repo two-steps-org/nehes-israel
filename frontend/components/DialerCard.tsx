@@ -14,7 +14,7 @@ type CustomerNumber = {
 
 interface DialerCardProps {
   agentNumber: string;
-  setAgentNumber: (v: string) => void;
+  setAgentNumber: (v: string | ((prev: string) => string)) => void;
   customerNumbers: CustomerNumber[];
   setCustomerNumbers: (v: CustomerNumber[]) => void;
   isCallInProgress: boolean;
@@ -32,6 +32,8 @@ interface DialerCardProps {
   isTripleCallInProgress: boolean;
   isTripleCallMode: boolean;
   setIsTripleCallMode: (v: boolean) => void;
+  handleCustomerNumberChange?: (idx: number, value: string) => void;
+  agentValidationError?: string;
 }
 
 export function DialerCard(props: DialerCardProps) {
@@ -50,6 +52,8 @@ export function DialerCard(props: DialerCardProps) {
     isTripleCallInProgress,
     isTripleCallMode,
     setIsTripleCallMode,
+    handleCustomerNumberChange,
+    agentValidationError,
   } = props;
   const { t, dir } = useLanguage();
   const phoneIconClass = dir === "rtl" ? "ml-2 h-4 w-4" : "mr-2 h-4 w-4";
@@ -58,8 +62,13 @@ export function DialerCard(props: DialerCardProps) {
   // Calculate if button should be disabled based on isTripleCallMode state
   const isButtonDisabled = isTripleCallMode
     ? isTripleCallInProgress ||
-      customerNumbers.some((n) => n.phone.trim().length === 0)
-    : isCallInProgress || !customerNumbers[0].phone.trim();
+      customerNumbers.some((n) => n.phone.trim().length === 0) ||
+      !!agentValidationError ||
+      !agentNumber.trim()
+    : isCallInProgress ||
+      !customerNumbers[0].phone.trim() ||
+      !!agentValidationError ||
+      !agentNumber.trim();
 
   // Determine which function to call based on isTripleCallMode state
   const handleButtonClick = isTripleCallMode ? handleTripleCall : handleCall;
@@ -80,6 +89,7 @@ export function DialerCard(props: DialerCardProps) {
     <div className="h-full">
       <div className="h-full dark:border-[#D29D0E]/30 dark:bg-[#122347]/50">
         <div className="px-6">
+          {/* Call button */}
           <Button
             onClick={handleButtonClick}
             disabled={isButtonDisabled}
@@ -90,6 +100,7 @@ export function DialerCard(props: DialerCardProps) {
             {buttonText}
           </Button>
 
+          {/* Triple call checkbox */}
           <div className="flex items-center space-x-2 gap-x-2 py-4">
             <Checkbox
               id="useTripleCall"
@@ -106,6 +117,7 @@ export function DialerCard(props: DialerCardProps) {
             </Label>
           </div>
 
+          {/* Agent number input */}
           <div className="space-y-2">
             <Label
               htmlFor="agentNumber"
@@ -120,12 +132,20 @@ export function DialerCard(props: DialerCardProps) {
               value={agentNumber}
               maxLength={10}
               onChange={(e) => setAgentNumber(e.target.value)}
-              className="border-input dark:border-[#D29D0E]/50 dark:bg-[#122347]/80 dark:text-white focus-visible:ring-[#D29D0E]"
+              className={`border-input dark:border-[#D29D0E]/50 dark:bg-[#122347]/80 dark:text-white focus-visible:ring-[#D29D0E] ${
+                agentValidationError ? "border-red-500 dark:border-red-400" : ""
+              }`}
               ref={agentInputRef}
               onFocus={() => setFocusedInput("agent")}
             />
+            {agentValidationError && (
+              <p className="text-sm text-red-500 dark:text-red-400">
+                {agentValidationError}
+              </p>
+            )}
           </div>
 
+          {/* Customer number inputs */}
           <div className="space-y-2 mt-4">
             <Label
               htmlFor="customerNumbers"
@@ -147,12 +167,16 @@ export function DialerCard(props: DialerCardProps) {
                     value={customerNumber.phone}
                     maxLength={10}
                     onChange={(e) => {
-                      const newNumbers = [...customerNumbers];
-                      newNumbers[idx] = {
-                        ...newNumbers[idx],
-                        phone: e.target.value,
-                      };
-                      setCustomerNumbers(newNumbers);
+                      if (handleCustomerNumberChange) {
+                        handleCustomerNumberChange(idx, e.target.value);
+                      } else {
+                        const newNumbers = [...customerNumbers];
+                        newNumbers[idx] = {
+                          ...newNumbers[idx],
+                          phone: e.target.value,
+                        };
+                        setCustomerNumbers(newNumbers);
+                      }
                     }}
                     onFocus={() => setFocusedInput({ type: "customer", idx })}
                     className="border-input dark:border-[#D29D0E]/50 dark:bg-[#122347]/80 dark:text-white focus-visible:ring-[#D29D0E]"

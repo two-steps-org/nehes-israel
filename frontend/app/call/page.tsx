@@ -9,13 +9,14 @@ import { DialerCard } from "@/components/DialerCard";
 import { ActiveLeadsCard } from "@/components/ActiveLeadsCard";
 import { StatusAlert } from "@/components/StatusAlert";
 import { LeadsTable } from "@/components/LeadsTable";
-import { ActiveLeads } from "@/types/activeLeads.type";
+import { ActiveLeads, Lead } from "@/types/activeLeads.type";
 import { io, Socket } from "socket.io-client";
-import React, { useMemo, useCallback, useEffect, useRef } from "react";
+import React, { useMemo, useCallback, useRef } from "react";
 import { useActiveLeadsSocket } from "@/hooks/useActiveLeadsSocket";
+import { useSelectedLeads } from "@/hooks/useSelectedLeads";
 
 export default function CallingApp() {
-  const { t, dir } = useLanguage();
+  const { dir } = useLanguage();
 
   // Call history hook with pagination
   const {
@@ -40,6 +41,44 @@ export default function CallingApp() {
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
   });
 
+  // Selected leads hook
+  const {
+    selectedLeads,
+    addSelectedLead,
+    addSelectedLeadWithPosition,
+    removeSelectedLead,
+    removeSelectedLeadByPosition,
+    clearSelectedLeads,
+    isLeadSelected,
+    searchAndSelectLead,
+    canAddMoreLeads,
+  } = useSelectedLeads();
+
+  // Handle phone number completion (10 digits)
+  const handlePhoneNumberComplete = useCallback(
+    async (phoneNumber: string) => {
+      try {
+        const result = await searchAndSelectLead(phoneNumber);
+        if (result.found && result.page) {
+          // Navigate to the page containing the lead
+          handlePageChange(result.page);
+        }
+      } catch (error) {
+        console.error("Error searching for lead:", error);
+      }
+    },
+    [searchAndSelectLead]
+  );
+
+  // Handle phone number deletion (manual delete from input)
+  const handlePhoneNumberDeleted = useCallback(
+    (position: number, previousPhoneNumber: string) => {
+      // Remove the pinned lead at this position
+      removeSelectedLeadByPosition(position);
+    },
+    [removeSelectedLeadByPosition]
+  );
+
   // Dialer hook
   const agentInputRef = React.useRef<HTMLInputElement>(null);
   const {
@@ -58,13 +97,49 @@ export default function CallingApp() {
     handleKeypadInput,
     handleKeypadBackspace,
     handleFillCustomerNumber,
+    handleCustomerNumberChange,
+    getPositionForPhoneNumber,
     isTripleCallMode,
     setIsTripleCallMode,
     mapCustomerNumbersToLeads,
+    agentValidationError,
+    validateAgentNumber,
   } = useDialer({
     onHistoryUpdate: (history: ActiveLeads) => setCallHistory(history),
     onActiveLeads: setActiveLeads,
+    onPhoneNumberComplete: handlePhoneNumberComplete,
+    onPhoneNumberDeleted: handlePhoneNumberDeleted,
   });
+
+  // Handle removing selected lead and clearing from dialer
+  const handleRemoveSelectedLead = useCallback(
+    (phoneNumber: string) => {
+      removeSelectedLead(phoneNumber);
+      // Also remove from customer numbers in dialer
+      setCustomerNumbers((prev) =>
+        prev.map((num) =>
+          num.phone === phoneNumber ? { ...num, phone: "" } : num
+        )
+      );
+    },
+    [removeSelectedLead, setCustomerNumbers]
+  );
+
+  // Handle selecting lead with position based on dialer
+  const handleSelectLeadWithPosition = useCallback(
+    (lead: Lead) => {
+      // Find the position where this lead's phone number should go
+      const position = getPositionForPhoneNumber(lead.phone_number);
+      if (position) {
+        // Use the existing position
+        addSelectedLeadWithPosition(lead, position);
+      } else {
+        // Use the regular add method which will find next available position
+        addSelectedLead(lead);
+      }
+    },
+    [addSelectedLead, addSelectedLeadWithPosition, getPositionForPhoneNumber]
+  );
 
   // Icon/class helpers
   const iconMarginClass = useMemo(
@@ -91,6 +166,16 @@ export default function CallingApp() {
     agentNumber: string,
     leads: any[]
   ) => {
+    // Validate agent number before proceeding with triple call
+    const agentError = validateAgentNumber(agentNumber);
+    if (agentError) {
+      console.log(
+        "Triple call cancelled: agent number validation failed:",
+        agentError
+      );
+      return;
+    }
+
     connectSocket();
     await handleTripleCall(agentNumber, leads);
     setTimeout(disconnectSocket, 60000);
@@ -99,10 +184,16 @@ export default function CallingApp() {
   // Memoize the search handler to prevent recreating on every render
   const handleSearch = useCallback(
     async (searchQuery: string, resetPage?: boolean) => {
-      const targetPage = resetPage ? 1 : currentPage;
-      await loadCallHistory(targetPage, 20, searchQuery);
+      if (resetPage && currentPage !== 1) {
+        // Reset to page 1 and load data
+        handlePageChange(1);
+        await loadCallHistory(1, 20, searchQuery);
+      } else {
+        // Use current page
+        await loadCallHistory(currentPage, 20, searchQuery);
+      }
     },
-    [loadCallHistory, currentPage]
+    [loadCallHistory, currentPage, handlePageChange]
   );
 
   return (
@@ -138,30 +229,35 @@ export default function CallingApp() {
               isTripleCallInProgress={isTripleCallInProgress}
               isTripleCallMode={isTripleCallMode}
               setIsTripleCallMode={setIsTripleCallMode}
+              handleCustomerNumberChange={handleCustomerNumberChange}
+              agentValidationError={agentValidationError}
             />
           </div>
           <div className="lg:w-2/3 space-y-6">
             {/* status alert */}
-            <StatusAlert tripleCallStatus={tripleCallStatus} t={t} />
+            <StatusAlert tripleCallStatus={tripleCallStatus} />
 
             {/* active call leads card*/}
             <ActiveLeadsCard
               activeLeads={activeLeads}
               iconMarginClass={iconMarginClass}
-              t={t}
             />
 
             {/* leads table with pagination */}
             <LeadsTable
               leads={leads}
               isLeadsLoading={isLeadsLoading}
-              t={t}
               handleFillCustomerNumber={handleFillCustomerNumber}
               currentPage={currentPage}
               totalPages={totalPages}
               total={total}
               onPageChange={handlePageChange}
               onSearch={handleSearch}
+              selectedLeads={selectedLeads}
+              onSelectLead={handleSelectLeadWithPosition}
+              onRemoveSelectedLead={handleRemoveSelectedLead}
+              canAddMoreLeads={canAddMoreLeads()}
+              getPositionForPhoneNumber={getPositionForPhoneNumber}
             />
           </div>
         </div>
