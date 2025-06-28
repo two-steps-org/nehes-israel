@@ -7,6 +7,20 @@
 - Vercel account (for frontend)
 - GitHub repository admin access
 
+## Manual Dockerhub upload commands for frontend and backend
+
+Backend -
+
+1. cd backend
+2. docker build --platform linux/amd64 -t shaybush/nehes-backend:latest .
+3. docker push shaybush/nehes-backend:latest
+
+Frontend -
+
+1. cd ../frontend
+2. docker build --platform linux/amd64 -t shaybush/nehes-frontend:latest .
+3. docker push shaybush/nehes-frontend:latest
+
 ---
 
 ## 1. Docker Hub Setup
@@ -26,6 +40,8 @@
 5. Generate a Render API key (Account Settings > API Keys).
 
 ---
+
+# TODO: use render for front end
 
 ## 3. Vercel Setup (Frontend)
 
