@@ -127,6 +127,7 @@ def create_twilio_bp(socketio):
                 status_callback=request.url_root.rstrip("/") + f"{BASE_URL}/twilio_callback",
                 status_callback_event=["initiated", "ringing", "answered", "completed"],
                 status_callback_method="POST"
+                #recording_status_callback="https://yourapp.com/recording_callback"
             )
             print(f"DEBUG: Call created with SID: {call.sid}")
 
@@ -182,7 +183,7 @@ def create_twilio_bp(socketio):
             print(f"ERROR: Exception occurred: {str(e)}")
             print(f"ERROR: Exception type: {type(e)}")
             return jsonify({"error": f"Failed to handle Twilio callback: {str(e)}"}), 500
-    
+
     return twilio_bp
 
 
@@ -266,6 +267,7 @@ def create_twilio_bp(socketio):
 #         status_callback_method="POST"
 #     )
 #     return jsonify({"call_sid": call.sid})
+
 
 
 
