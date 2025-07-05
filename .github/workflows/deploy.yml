@@ -13,16 +13,6 @@ jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug secrets
-        run: |
-          echo "Username length: ${#DOCKERHUB_USERNAME}"
-          echo "Token length: ${#DOCKERHUB_TOKEN}"
-          echo "Example length: ${#EXAMPLE}"
-          echo "Example: ${{ secrets.EXAMPLE }}"
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          EXAMPLE: ${{ secrets.EXAMPLE }}
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Set up Docker Buildx
