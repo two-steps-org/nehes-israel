@@ -62,16 +62,16 @@ jobs:
   #         tags: ${{ secrets.DOCKERHUB_USERNAME }}/nehes-frontend:latest
 
   # # Deploy backend
-  # deploy-backend:
-  #   needs: build-backend
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Deploy to Render
-  #       run: |
-  #         curl -X POST "https://api.render.com/deploy/srv-${{ secrets.RENDER_BACKEND_SERVICE_ID }}" \
-  #           -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-  #           -H "Content-Type: application/json" \
-  #           -d '{}'
+  deploy-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST "https://api.render.com/deploy/srv-d1ftoemmcj7s73c3mv50?key=${{ secrets.RENDER_BACKEND_SERVICE_ID }}" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}'
 
   # Deploy frontend
   # deploy-frontend:
@@ -84,6 +84,7 @@ jobs:
   #           -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
   #           -H "Content-Type: application/json" \
   #           -d '{}'
+
 #   # Notify in gmail
 #   notify:
 #     needs: [deploy-backend]
