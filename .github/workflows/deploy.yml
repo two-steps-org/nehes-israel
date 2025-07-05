@@ -17,12 +17,12 @@ jobs:
         run: |
           echo "Username length: ${#DOCKERHUB_USERNAME}"
           echo "Token length: ${#DOCKERHUB_TOKEN}"
-          echo "Secret length: ${#SECRET}"
-          echo "Secret: ${{ secrets.SECRET }}"
+          echo "Example length: ${#EXAMPLE}"
+          echo "Example: ${{ secrets.EXAMPLE }}"
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-          SECRET: ${{ secrets }}
+          EXAMPLE: ${{ secrets.EXAMPLE }}
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Set up Docker Buildx
